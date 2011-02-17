@@ -97,6 +97,9 @@ module Grit
     #
     # Returns a String of the SHA1 of the new commit.
     def commit(message, parents = nil, actor = nil, last_tree = nil, head = 'master')
+      hook = self.repo.hook('pre-commit')
+      return false unless hook && hook.success?
+
       if parents.is_a?(Hash)
         actor          = parents[:actor]
         committer      = parents[:committer]
@@ -137,7 +140,9 @@ module Grit
 
       commit_sha1 = self.repo.git.put_raw_object(contents.join("\n"), 'commit')
 
-      self.repo.update_ref(head, commit_sha1)
+      sha1 = self.repo.update_ref(head, commit_sha1)
+      self.repo.hook('post-commit')
+      sha1
     end
 
     # Recursively write a tree to the index.
