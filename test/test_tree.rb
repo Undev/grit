@@ -8,11 +8,9 @@ class TestTree < Test::Unit::TestCase
 
   # contents
   def test_nosuch_tree
-    t = @r.tree('blahblah')
-    assert t.contents.is_a?(Array)
-    assert t.is_a?(Tree)
-  rescue Grit::Git::CommandFailed => err
-    assert_equal 128, err.exitstatus
+    assert_raise Grit::Git::CommandFailed do
+      t = @r.tree('blahblah')
+    end
   end
 
   def test_contents_should_cache
