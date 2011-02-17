@@ -192,7 +192,7 @@ module Grit
     # an Integer that is the sum of the failed exit statuses.
     def check_applies(head_sha, applies_sha)
       git_index = create_tempfile('index', true)
-      options   = {:env => {'GIT_INDEX_FILE' => git_index}, :raise => true}
+      options   = {:env => {'GIT_INDEX_FILE' => git_index}}
       status    = 0
       begin
         native(:read_tree, options.dup, head_sha)
@@ -226,7 +226,7 @@ module Grit
     def apply_patch(head_sha, patch)
       git_index = create_tempfile('index', true)
 
-      options = {:env => {'GIT_INDEX_FILE' => git_index}, :raise => true}
+      options = {:env => {'GIT_INDEX_FILE' => git_index}}
       begin
         native(:read_tree, options.dup, head_sha)
         native(:apply, options.merge(:cached => true, :input => patch))
@@ -253,9 +253,6 @@ module Grit
     #       invoking the git command.
     #     :env - Hash of environment variable key/values that are set on the
     #       child process.
-    #     :raise - When set true, commands that exit with a non-zero status
-    #       raise a CommandFailed exception. This option is available only on
-    #       platforms that support fork(2).
     #     :process_info - By default, a single string with output written to
     #       the process's stdout is returned. Setting this option to true
     #       results in a [exitstatus, out, err] tuple being returned instead.

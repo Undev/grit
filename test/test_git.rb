@@ -133,7 +133,7 @@ class TestGit < Test::Unit::TestCase
 
   def test_raising_exceptions_when_native_git_commands_fail
     assert_raise Grit::Git::CommandFailed do
-      @git.native(:bad, {:raise => true})
+      @git.native(:bad)
     end
   end
 end
