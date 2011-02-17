@@ -311,7 +311,8 @@ module Grit
     # Returns nil if the committish value is not found.
     def recent_tag_name(committish = nil, options = {})
       value = git.describe({:always => true}.update(options), committish.to_s).to_s.strip
-      value.size.zero? ? nil : value
+    rescue Grit::Git::CommandFailed
+      nil
     end
 
     # An array of Remote objects representing the remote branches in

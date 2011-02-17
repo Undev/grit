@@ -230,8 +230,8 @@ module Grit
       begin
         native(:read_tree, options.dup, head_sha)
         native(:apply, options.merge(:cached => true, :input => patch))
-      rescue CommandFailed
-        return false
+      rescue CommandFailed => err
+        return false if err.exitstatus != 128
       end
       native(:write_tree, :env => options[:env]).to_s.chomp!
     end
@@ -275,8 +275,8 @@ module Grit
     #   stderr as Strings.
     # Raises Grit::Git::GitTimeout when the timeout is exceeded or when more
     #   than Grit::Git.git_max_size bytes are output.
-    # Raises Grit::Git::CommandFailed when the :raise option is set true and the
-    #   git command exits with a non-zero exit status. The CommandFailed's #command,
+    # Raises Grit::Git::CommandFailed if the git command exits
+    #   with a non-zero exit status. The CommandFailed's #command,
     #   #exitstatus, and #err attributes can be used to retrieve additional
     #   detail about the error.
     def native(cmd, options = {}, *args, &block)
@@ -286,7 +286,6 @@ module Grit
 
       # special option arguments
       env = options.delete(:env) || {}
-      raise_errors = options.delete(:raise)
       process_info = options.delete(:process_info)
 
       # fall back to using a shell when the last argument looks like it wants to
@@ -321,7 +320,7 @@ module Grit
       Grit.log(process.err) if Grit.debug
 
       status = process.status
-      if raise_errors && !status.success?
+      if !status.success?
         raise CommandFailed.new(argv.join(' '), status.exitstatus, process.err)
       elsif process_info
         [status.exitstatus, process.out, process.err]

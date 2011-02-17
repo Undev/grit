@@ -11,6 +11,8 @@ class TestTree < Test::Unit::TestCase
     t = @r.tree('blahblah')
     assert t.contents.is_a?(Array)
     assert t.is_a?(Tree)
+  rescue Grit::Git::CommandFailed => err
+    assert_equal 128, err.exitstatus
   end
 
   def test_contents_should_cache

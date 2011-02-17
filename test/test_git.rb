@@ -18,6 +18,7 @@ class TestGit < Test::Unit::TestCase
     Grit.stubs(:log)
     Grit.expects(:log).with(includes("git: 'bad' is not a git command"))
     @git.bad
+  rescue Grit::Git::CommandFailed
   end
 
   def test_logs_stderr_when_skipping_timeout
@@ -25,6 +26,7 @@ class TestGit < Test::Unit::TestCase
     Grit.stubs(:log)
     Grit.expects(:log).with(includes("git: 'bad' is not a git command"))
     @git.bad :timeout => false
+  rescue Grit::Git::CommandFailed
   end
 
   def test_transform_options
@@ -46,6 +48,7 @@ class TestGit < Test::Unit::TestCase
   def test_can_skip_timeout
     Timeout.expects(:timeout).never
     @git.something(:timeout => false)
+  rescue Grit::Git::CommandFailed
   end
 
   def test_raises_if_too_many_bytes
@@ -115,9 +118,10 @@ class TestGit < Test::Unit::TestCase
   end
 
   def test_native_process_info_option_on_failure
-    exitstatus, out, err = @git.no_such_command({:process_info => true})
-    assert_equal 1, exitstatus
-    assert !err.empty?
+    @git.no_such_command
+  rescue Grit::Git::CommandFailed => err
+    assert_equal 1, err.exitstatus
+    assert !err.err.empty?
   end
 
   def test_native_process_info_option_on_success
