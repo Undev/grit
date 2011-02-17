@@ -43,11 +43,11 @@ class TestRubyGitIndex < Test::Unit::TestCase
 
   def test_allow_custom_committed_and_authored_dates
     parents = [@git.commits.first]
-    sha     = @git.index.commit 'message', 
+    sha     = @git.index.commit 'message',
                 :committed_date => Time.local(2000),
                 :authored_date  => Time.local(2001),
-                :parents        => parents, 
-                :actor          => @user, 
+                :parents        => parents,
+                :actor          => @user,
                 :head           => 'master'
 
     commit  = @git.commit(sha)
@@ -58,10 +58,10 @@ class TestRubyGitIndex < Test::Unit::TestCase
 
   def test_allow_custom_committers_and_authors
     parents = [@git.commits.first]
-    sha     = @git.index.commit 'message', 
+    sha     = @git.index.commit 'message',
                 :committer => Grit::Actor.new('abc', nil),
                 :author    => Grit::Actor.new('def', nil),
-                :parents   => parents, 
+                :parents   => parents,
                 :head      => 'master'
 
     commit  = @git.commit(sha)
