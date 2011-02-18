@@ -19,6 +19,9 @@ module Grit
     # Public: The Grit::Git command line interface object.
     attr_accessor :git
 
+    # Public: The hash of "submodule_name" => Grit::Submodule
+    attr_accessor :submodules
+
     # Public: Create a new Repo instance.
     #
     # path    - The String path to either the root git directory or the bare
@@ -54,6 +57,7 @@ module Grit
       end
 
       self.git = Git.new(self.path)
+      @submodules = Grit::Submodule.create_submodules(self)
     end
 
     # Public: Initialize a git repository (create it on the filesystem). By

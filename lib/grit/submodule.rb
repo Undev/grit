@@ -1,46 +1,41 @@
 module Grit
 
   class Submodule
-    attr_reader :id
-    attr_reader :mode
+    class MicroSubmodule
+      attr_reader :repo, :id, :name, :mode
+    end
+
+    # Public: The Grit::Repo instance for submodule repo
+    attr_reader :repo
+
+    # Public: The String of name of submodule (relative path inside parent repo)
     attr_reader :name
 
-    # Create a Submodule containing just the specified attributes
-    #   +repo+ is the Repo
-    #   +atts+ is a Hash of instance variable data
-    #
-    # Returns Grit::Submodule (unbaked)
-    def self.create(repo, atts)
-      self.allocate.create_initialize(repo, atts)
-    end
+    # Public: url of submodule remote
+    attr_reader :url
 
-    # Initializer for Submodule.create
-    #   +repo+ is the Repo
-    #   +atts+ is a Hash of instance variable data
-    #
-    # Returns Grit::Submodule
-    def create_initialize(repo, atts)
-      @repo = repo
-      atts.each do |k, v|
-        instance_variable_set("@#{k}".to_sym, v)
-      end
-      self
-    end
+    # Public: The String of submodule id
+    attr_reader :id
 
-    # The url of this submodule
-    #   +ref+ is the committish that should be used to look up the url
-    #
-    # Returns String
-    def url(ref)
-      config = self.class.config(@repo, ref)
+    # Public: The Grit::Repo instance for parent repo
+    attr_reader :parent
 
-      lookup = config.keys.inject({}) do |acc, key|
-        id = config[key]['id']
-        acc[id] = config[key]['url']
-        acc
+    # Create submodules for given parent and ref
+    #   +parent+ is parent repo of type Grit::Repo
+    #   +ref+ is the committish (defaults to 'master')
+    # Returns a Hash of { <path:String> => <submodule:Grit::Submodule> }
+    # Returns {} if parent doesn't contain submodules
+    def self.create_submodules(parent, ref = "master")
+      rst = {}
+      parent_dir = File.dirname(parent.path)
+      submodules_info = self.config(parent, ref)
+      submodules_info.each do |name, atts|
+        path = File.join(parent_dir, name)
+        submodule = Submodule.new(path, name, atts['url'], atts['id'], parent)
+        rst[name] = submodule
       end
 
-      lookup[@id]
+      rst
     end
 
     # The configuration information for the given +repo+
@@ -75,13 +70,18 @@ module Grit
       config
     end
 
-    def basename
-      File.basename(name)
+    # Initializer for Grit::Submodule
+    def initialize(path, name, url, id, parent)
+      @repo = Repo.new(path)
+      @name = name
+      @url = url
+      @id = id
+      @parent = parent
     end
 
     # Pretty object inspection
     def inspect
-      %Q{#<Grit::Submodule "#{@id}">}
+      %Q{#<Grit::Submodule "#{@name}" -- "#{@id}">}
     end
   end # Submodule
 
