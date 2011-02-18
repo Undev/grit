@@ -495,11 +495,18 @@ module Grit
     #
     # Returns Grit::Commit[]
     def log(commit = 'master', path = nil, options = {})
+      commit_list = []
       default_options = {:pretty => "raw"}
       actual_options  = default_options.merge(options)
       arg = path ? [commit, '--', path] : [commit]
-      commits = self.git.log(actual_options, *arg)
-      Commit.list_from_string(self, commits)
+      begin
+        commits = self.git.log(actual_options, *arg)
+        commit_list = Commit.list_from_string(self, commits)
+      rescue Grit::Git::CommandFailed
+        # prevent fail if repo is empty
+        raise if !branches().empty?
+      end
+      commit_list
     end
 
     # The diff from commit +a+ to commit +b+, optionally restricted to the given file(s)

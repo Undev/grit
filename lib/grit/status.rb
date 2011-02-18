@@ -129,11 +129,16 @@ module Grit
       # compares the index and the repository
       def diff_index(treeish)
         hsh = {}
-        @base.git.diff_index({}, treeish).split("\n").each do |line|
-          (info, file) = line.split("\t")
-          (mode_src, mode_dest, sha_src, sha_dest, type) = info.split
-          hsh[file] = {:path => file, :mode_repo => mode_src.to_s[1, 7], :mode_index => mode_dest,
-                        :sha_repo => sha_src, :sha_index => sha_dest, :type => type}
+        begin
+          @base.git.diff_index({}, treeish).split("\n").each do |line|
+            (info, file) = line.split("\t")
+            (mode_src, mode_dest, sha_src, sha_dest, type) = info.split
+            hsh[file] = {:path => file, :mode_repo => mode_src.to_s[1, 7], :mode_index => mode_dest,
+                         :sha_repo => sha_src, :sha_index => sha_dest, :type => type}
+          end
+        rescue Grit::Git::CommandFailed
+          # prevent fail if repo is empty
+          raise if !@base.branches().empty?
         end
         hsh
       end
