@@ -1,33 +1,7 @@
 module Grit
 
-  class Blob
+  class Blob < BaseTreeEntry
     DEFAULT_MIME_TYPE = "text/plain"
-
-    attr_reader :id
-    attr_reader :mode
-    attr_reader :name
-
-    # Create an unbaked Blob containing just the specified attributes
-    #   +repo+ is the Repo
-    #   +atts+ is a Hash of instance variable data
-    #
-    # Returns Grit::Blob (unbaked)
-    def self.create(repo, atts)
-      self.allocate.create_initialize(repo, atts)
-    end
-
-    # Initializer for Blob.create
-    #   +repo+ is the Repo
-    #   +atts+ is a Hash of instance variable data
-    #
-    # Returns Grit::Blob (unbaked)
-    def create_initialize(repo, atts)
-      @repo = repo
-      atts.each do |k, v|
-        instance_variable_set("@#{k}".to_sym, v)
-      end
-      self
-    end
 
     # The size of this blob in bytes
     #
@@ -108,19 +82,6 @@ module Grit
       blames
     end
 
-    def basename
-      File.basename(name)
-    end
-
-    # Pretty object inspection
-    def inspect
-      %Q{#<Grit::Blob "#{@id}">}
-    end
-
-    # Compares blobs by name
-    def <=>(other)
-      name <=> other.name
-    end
   end # Blob
 
 end # Grit

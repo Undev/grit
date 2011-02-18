@@ -1,12 +1,9 @@
 module Grit
 
-  class Tree
+  class Tree < BaseTreeEntry
     extend Lazy
 
     lazy_reader :contents
-    attr_reader :id
-    attr_reader :mode
-    attr_reader :name
 
     # Construct the contents of the tree
     #   +repo+ is the Repo
@@ -36,29 +33,6 @@ module Grit
       Tree.construct(@repo, @id, [])
     end
 
-    # Create an unbaked Tree containing just the specified attributes
-    #   +repo+ is the Repo
-    #   +atts+ is a Hash of instance variable data
-    #
-    # Returns Grit::Tree (unbaked)
-    def self.create(repo, atts)
-      self.allocate.create_initialize(repo, atts)
-    end
-
-    # Initializer for Tree.create
-    #   +repo+ is the Repo
-    #   +atts+ is a Hash of instance variable data
-    #
-    # Returns Grit::Tree (unbaked)
-    def create_initialize(repo, atts)
-      @repo = repo
-
-      atts.each do |k, v|
-        instance_variable_set("@#{k}", v)
-      end
-      self
-    end
-
     # Parse a content item and create the appropriate object
     #   +repo+ is the Repo
     #   +text+ is the single line containing the items data in `git ls-tree` format
@@ -73,8 +47,11 @@ module Grit
           Blob.create(repo, :id => id, :mode => mode, :name => name)
         when "link"
           Blob.create(repo, :id => id, :mode => mode, :name => name)
+        # cases below not supported yet
         when "commit"
-          Submodule.create(repo, :id => id, :mode => mode, :name => name)
+          BaseTreeEntry.create(repo, :id => id, :mode => mode, :name => name)
+        when "tag"
+          BaseTreeEntry.create(repo, :id => id, :mode => mode, :name => name)
         else
           raise Grit::InvalidObjectType, type
       end
@@ -97,29 +74,16 @@ module Grit
       end
     end
 
-    def basename
-      File.basename(name)
-    end
-
-    # Pretty object inspection
-    def inspect
-      %Q{#<Grit::Tree "#{@id}">}
-    end
-
     # Find only Tree objects from contents
     def trees
-      contents.select {|v| v.kind_of? Tree}
+      contents.find_all { |v| v.kind_of? Tree }
     end
 
     # Find only Blob objects from contents
     def blobs
-      contents.select {|v| v.kind_of? Blob}
+      contents.find_all { |v| v.kind_of? Blob }
     end
 
-    # Compares trees by name
-    def <=>(other)
-      name <=> other.name
-    end
   end # Tree
 
 end # Grit
