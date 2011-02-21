@@ -90,6 +90,7 @@ module Grit
       def construct_status
         @files = ls_files
 
+        cwd = Dir.getwd()
         Dir.chdir(@base.working_dir) do
           # find untracked in working dir
           Dir.glob('**/*') do |file|
@@ -99,7 +100,7 @@ module Grit
           end
 
           # find modified in tree
-         diff_files.each do |path, data|
+          diff_files.each do |path, data|
             @files[path] ? @files[path].merge!(data) : @files[path] = data
           end
 
@@ -112,6 +113,7 @@ module Grit
             @files[k] = StatusFile.new(@base, file_hash)
           end
         end
+        Dir.chdir(cwd)
       end
 
       # compares the index and the working directory
