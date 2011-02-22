@@ -709,14 +709,14 @@ module Grit
 
     def submodule_update(opts={})
       recursive = opts[:recursive]
-      @submodules.values.foreach do |subm|
+      @submodules.values.each do |subm|
         subm.update(opts)
         subm.repo.submodule_update(opts)  if recursive
       end
     end
 
     def submodule_init(recursive=false)
-      @submodules.values.foreach do |subm|
+      @submodules.values.each do |subm|
         subm.init()
         subm.repo.submodule_init(recursive)  if recursive
       end

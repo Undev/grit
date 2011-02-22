@@ -112,7 +112,7 @@ module Grit
       {
         :initialized? => initialized?,
         :matches? => commit_matches?,
-        :commit => commit,
+        :commit => commit_sha,
         :ref => ref
       }
     end
