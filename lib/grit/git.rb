@@ -293,13 +293,16 @@ module Grit
       input    = options.delete(:input)
       timeout  = options.delete(:timeout); timeout = true if timeout.nil?
       base     = options.delete(:base);    base    = true if base.nil?
-      chdir    = options.delete(:chdir)
+      # work-around: git behaves very strange with --work-tree argument
+      # for ex., git-pull doesn't respect it at all
+      # git-submodule commands assume that it's submodule's work-tree,
+      # etc., so we change dir for every command.
+      chdir    = options.delete(:chdir); chdir = @work_tree if chdir.nil?
 
       # build up the git process argv
       argv = []
       argv << Git.git_binary
       argv << "--git-dir=#{@git_dir}" if base
-      argv << "--work-tree=#{@work_tree}" if base
       argv << cmd.to_s.tr('_', '-')
       argv.concat(options_to_argv(options))
       argv.concat(args)

@@ -110,11 +110,10 @@ class TestGit < Test::Unit::TestCase
     args = [
             [Grit::Git.git_binary,
              "--git-dir=#{@git.git_dir}",
-             "--work-tree=#{@git.work_tree}",
              "help", "-a"],
             { 'A' => 'B' },
             {:input => nil,
-              :chdir => nil,
+              :chdir => @git.work_tree,
               :timeout => Grit::Git.git_timeout,
               :max => Grit::Git.git_max_size}
            ]

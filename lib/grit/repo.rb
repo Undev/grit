@@ -692,10 +692,7 @@ module Grit
     # Perform pull
     # Returns short SHA for fetched and merged revision
     def pull(opts={}, *args)
-      # work-around: git pull doesn't respect --work-tree parameter
-      # so, we pass working_dir to Process class to start it in
-      # proper directory
-      st = @git.pull(opts.merge({:chdir => @working_dir}), *args)
+      st = @git.pull(opts}), *args)
       line = st.split("\n")[0]
       (_, commits, _) = line.split(' ')
       new_commit = commits.split('..')[1]
