@@ -692,7 +692,7 @@ module Grit
     # Perform pull
     # Returns short SHA for fetched and merged revision
     def pull(opts={}, *args)
-      st = @git.pull(opts}), *args)
+      st = @git.pull(opts, *args)
       line = st.split("\n")[0]
       (_, commits, _) = line.split(' ')
       new_commit = commits.split('..')[1]
