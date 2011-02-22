@@ -685,6 +685,24 @@ module Grit
       end
     end
 
+    def checkout(branch, *paths)
+      @git.checkout({}, branch, *paths)
+    end
+
+    # Perform pull
+    # Returns short SHA for fetched and merged revision
+    def pull(opts={}, *args)
+      # work-around: git pull doesn't respect --work-tree parameter
+      # so, we pass working_dir to Process class to start it in
+      # proper directory
+      st = @git.pull(opts.merge({:chdir => @working_dir}), *args)
+      line = st.split("\n")[0]
+      (_, commits, _) = line.split(' ')
+      new_commit = commits.split('..')[1]
+
+      new_commit
+    end
+
 
     def submodules_have_file?(file)
       @submodules.values.any? { |subm| subm.has_file?(file) }
