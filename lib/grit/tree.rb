@@ -37,7 +37,7 @@ module Grit
     #   +repo+ is the Repo
     #   +text+ is the single line containing the items data in `git ls-tree` format
     #
-    # Returns Grit::Blob or Grit::Tree
+    # Returns subclasses of Grit::BaseTreeEntry
     def content_from_string(repo, text)
       mode, type, id, name = text.split(" ", 4)
       case type
