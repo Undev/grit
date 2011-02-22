@@ -686,6 +686,7 @@ module Grit
     end
 
     def checkout(branch, *paths)
+      branch = branch.name  if branch.is_a?(Grit::Head)
       @git.checkout({}, branch, *paths)
     end
 
