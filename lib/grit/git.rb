@@ -249,8 +249,8 @@ module Grit
     #     :timeout - Maximum amount of time the command can run for before
     #       being aborted. When true, use Grit::Git.git_timeout; when numeric,
     #       use that number of seconds; when false or 0, disable timeout.
-    #     :base - Set false to avoid passing the --git-dir argument when
-    #       invoking the git command.
+    #     :base - Set false to avoid passing the --git-dir and
+    #       --work-tree arguments when invoking the git command.
     #     :env - Hash of environment variable key/values that are set on the
     #       child process.
     #     :process_info - By default, a single string with output written to
@@ -299,6 +299,7 @@ module Grit
       argv = []
       argv << Git.git_binary
       argv << "--git-dir=#{git_dir}" if base
+      argv << "--work-tree=#{work_tree}" if base
       argv << cmd.to_s.tr('_', '-')
       argv.concat(options_to_argv(options))
       argv.concat(args)
