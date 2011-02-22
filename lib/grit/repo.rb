@@ -56,7 +56,7 @@ module Grit
         raise NoSuchPathError.new(epath)
       end
 
-      @git = Git.new(@path)
+      @git = Git.new(@path, @working_dir)
       @submodules = Grit::Submodule.create_submodules(self)
     end
 

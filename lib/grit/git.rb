@@ -80,9 +80,9 @@ module Grit
 
     attr_reader :git_dir, :bytes_read, :work_tree
 
-    def initialize(git_dir)
+    def initialize(git_dir, work_tree)
       @git_dir    = git_dir
-      @work_tree  = git_dir.gsub(/\/\.git$/,'')
+      @work_tree  = work_tree
       @bytes_read = 0
     end
 
