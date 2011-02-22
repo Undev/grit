@@ -703,6 +703,54 @@ module Grit
       new_commit
     end
 
+    def submodule_add(url, path='')
+      subm = Submodule.add(self, url, path)
+      @submodules[subm.path] = subm
+
+      subm
+    end
+
+    def submodule_update(opts)
+      recursive = opts[:recursive]
+      @submodules.values.foreach do |subm|
+        subm.update(opts)
+        subm.repo.submodule_update(opts)  if recursive
+      end
+    end
+
+    def submodule_init(recursive=false)
+      @submodules.values.foreach do |subm|
+        subm.init()
+        subm.repo.submodule_init(recursive)  if recursive
+      end
+    end
+
+    # Same as git submodule status --recursive
+    # Returns Array of Hashes
+    # {<path:String> => <extended result of Submodule.status>}, where
+    # submodule status extended with :subm => Submodule instance
+    def submodule_status(start_path=".")
+      @submodules.values.reduce([]) do |res, subm|
+        path = File.join(start_path, subm.path)
+        status = subm.status.merge({:subm => subm})
+        res + [{path => status}] + subm.repo.submodule_status(path)
+      end
+    end
+
+    # Commits changes, related to submodules.
+    # If names given, commits only them, otherwise, commits all submodules.
+    # If .gitmodules modified in some ways (changed, or added), commits it, too
+    def submodule_commit_changes(message, *names)
+      if names.empty?
+        names = @submodules.keys
+      elsif
+        names = @submodules.keys.find_all { |n| names.include?(n) }
+      end
+      names << '.gitmodules'  if status.modified_names.include?('.gitmodules')
+      commit_files(message, names)
+      # cannot use commit_files_force here, because submodule path
+      # couldn't be untracked
+    end
 
     def submodules_have_file?(file)
       @submodules.values.any? { |subm| subm.has_file?(file) }
