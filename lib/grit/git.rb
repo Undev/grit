@@ -3,8 +3,8 @@ module Grit
 
   class Git
     class GitTimeout < RuntimeError
-      attr_accessor :command
-      attr_accessor :bytes_read
+      attr_reader :command
+      attr_reader :bytes_read
 
       def initialize(command = nil, bytes_read = nil)
         @command = command
@@ -40,7 +40,7 @@ module Grit
     include GitRuby
 
     def exist?
-      File.exist?(self.git_dir)
+      File.exist?(@git_dir)
     end
 
     def put_raw_object(content, type)
@@ -78,12 +78,12 @@ module Grit
       Grit::Git.git_timeout = old_timeout
     end
 
-    attr_accessor :git_dir, :bytes_read, :work_tree
+    attr_reader :git_dir, :bytes_read, :work_tree
 
     def initialize(git_dir)
-      self.git_dir    = git_dir
-      self.work_tree  = git_dir.gsub(/\/\.git$/,'')
-      self.bytes_read = 0
+      @git_dir    = git_dir
+      @work_tree  = git_dir.gsub(/\/\.git$/,'')
+      @bytes_read = 0
     end
 
     def shell_escape(str)
@@ -96,7 +96,7 @@ module Grit
     #
     # Returns Boolean
     def fs_exist?(file)
-      File.exist?(File.join(self.git_dir, file))
+      File.exist?(File.join(@git_dir, file))
     end
 
     # Read a normal file from the filesystem.
@@ -104,7 +104,7 @@ module Grit
     #
     # Returns the String contents of the file
     def fs_read(file)
-      File.read(File.join(self.git_dir, file))
+      File.read(File.join(@git_dir, file))
     end
 
     # Write a normal file to the filesystem.
@@ -113,7 +113,7 @@ module Grit
     #
     # Returns nothing
     def fs_write(file, contents)
-      path = File.join(self.git_dir, file)
+      path = File.join(@git_dir, file)
       FileUtils.mkdir_p(File.dirname(path))
       File.open(path, 'w') do |f|
         f.write(contents)
@@ -125,7 +125,7 @@ module Grit
     #
     # Returns nothing
     def fs_delete(file)
-      FileUtils.rm_rf(File.join(self.git_dir, file))
+      FileUtils.rm_rf(File.join(@git_dir, file))
     end
 
     # Move a normal file
@@ -134,7 +134,7 @@ module Grit
     #
     # Returns nothing
     def fs_move(from, to)
-      FileUtils.mv(File.join(self.git_dir, from), File.join(self.git_dir, to))
+      FileUtils.mv(File.join(@git_dir, from), File.join(@git_dir, to))
     end
 
     # Make a directory
@@ -142,7 +142,7 @@ module Grit
     #
     # Returns nothing
     def fs_mkdir(dir)
-      FileUtils.mkdir_p(File.join(self.git_dir, dir))
+      FileUtils.mkdir_p(File.join(@git_dir, dir))
     end
 
     # Chmod the the file or dir and everything beneath
@@ -150,12 +150,12 @@ module Grit
     #
     # Returns nothing
     def fs_chmod(mode, file = '/')
-      FileUtils.chmod_R(mode, File.join(self.git_dir, file))
+      FileUtils.chmod_R(mode, File.join(@git_dir, file))
     end
 
     def list_remotes
       remotes = []
-      Dir.chdir(File.join(self.git_dir, 'refs/remotes')) do
+      Dir.chdir(File.join(@git_dir, 'refs/remotes')) do
         remotes = Dir.glob('*')
       end
       remotes
@@ -170,7 +170,7 @@ module Grit
     end
 
     def commit_from_sha(id)
-      git_ruby_repo = GitRuby::Repository.new(self.git_dir)
+      git_ruby_repo = GitRuby::Repository.new(@git_dir)
       object = git_ruby_repo.get_object_by_sha1(id)
 
       if object.type == :commit
@@ -298,8 +298,8 @@ module Grit
       # build up the git process argv
       argv = []
       argv << Git.git_binary
-      argv << "--git-dir=#{git_dir}" if base
-      argv << "--work-tree=#{work_tree}" if base
+      argv << "--git-dir=#{@git_dir}" if base
+      argv << "--work-tree=#{@work_tree}" if base
       argv << cmd.to_s.tr('_', '-')
       argv.concat(options_to_argv(options))
       argv.concat(args)
@@ -400,11 +400,11 @@ module Grit
 
       if RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|bccwin/
         ext_args = args.reject { |a| a.empty? }.map { |a| (a == '--' || a[0].chr == '|' || Grit.no_quote) ? a : "\"#{e(a)}\"" }
-        gitdir = base ? "--git-dir=\"#{self.git_dir}\"" : ""
+        gitdir = base ? "--git-dir=\"#{@git_dir}\"" : ""
         call = "#{prefix}#{Git.git_binary} #{gitdir} #{cmd.to_s.gsub(/_/, '-')} #{(opt_args + ext_args).join(' ')}#{e(postfix)}"
       else
         ext_args = args.reject { |a| a.empty? }.map { |a| (a == '--' || a[0].chr == '|' || Grit.no_quote) ? a : "'#{e(a)}'" }
-        gitdir = base ? "--git-dir='#{self.git_dir}'" : ""
+        gitdir = base ? "--git-dir='#{@git_dir}'" : ""
         call = "#{prefix}#{Git.git_binary} #{gitdir} #{cmd.to_s.gsub(/_/, '-')} #{(opt_args + ext_args).join(' ')}#{e(postfix)}"
       end
 
