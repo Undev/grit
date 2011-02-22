@@ -2,10 +2,6 @@
 module Grit
 
   class Submodule
-    class MicroSubmodule
-      attr_reader :repo, :id, :name, :mode
-    end
-
     # Public: The Grit::Repo instance for submodule repo
     attr_reader :repo
 
