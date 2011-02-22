@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/helper'
 
-class TestTree < Test::Unit::TestCase
+class TestSTree < Test::Unit::TestCase
   def setup
     @r = Repo.new(GRIT_REPO)
     @t = Tree.allocate
@@ -50,12 +50,12 @@ class TestTree < Test::Unit::TestCase
     assert_equal "grit.rb", tree.name
   end
 
-  def test_content_from_string_tree_should_return_submodule
+  def test_content_from_string_tree_should_return_base_tree_entry
     text = fixture('ls_tree_submodule').split("\n").first
 
     sm = @t.content_from_string(nil, text)
 
-    assert_kind_of Submodule, sm
+    assert_kind_of BaseTreeEntry, sm
   end
 
   def test_content_from_string_invalid_type_should_raise
