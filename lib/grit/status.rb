@@ -29,6 +29,10 @@ module Grit
       @files.select { |k, f| f.untracked }
     end
 
+    def modified_names
+      changed.keys + added.keys
+    end
+
     def pretty
       out = ''
       self.each do |file|
