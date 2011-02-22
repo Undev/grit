@@ -97,8 +97,12 @@ module Grit
         Dir.chdir(@base.working_dir) do
           # find untracked in working dir
           Dir.glob('**/*') do |file|
-            if !@files[file]
-              @files[file] = {:path => file, :untracked => true} if !File.directory?(file)
+            condition = [!@files.has_key?(file),
+                         !@base.submodules_have_file?(file),
+                         !File.directory?(file)
+                        ]
+            if condition.all?
+              @files[file] = {:path => file, :untracked => true}
             end
           end
 

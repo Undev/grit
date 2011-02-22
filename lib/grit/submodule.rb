@@ -72,6 +72,11 @@ module Grit
       @parent = parent
     end
 
+
+    def has_file?(file)
+      file.start_with?(@path)
+    end
+
     # Pretty object inspection
     def inspect
       %Q{#<Grit::Submodule "#{@path}" -- "#{@url}">}
