@@ -7,20 +7,20 @@ module Grit
     }
 
     # Public: The String path of the Git repo.
-    attr_accessor :path
+    attr_reader :path
 
     # Public: The String path to the working directory of the repo, or nil if
     # there is no working directory.
-    attr_accessor :working_dir
+    attr_reader :working_dir
 
     # Public: The Boolean of whether or not the repo is bare.
     attr_reader :bare
 
     # Public: The Grit::Git command line interface object.
-    attr_accessor :git
+    attr_reader :git
 
     # Public: The hash of "submodule_name" => Grit::Submodule
-    attr_accessor :submodules
+    attr_reader :submodules
 
     # Public: Create a new Repo instance.
     #
@@ -44,11 +44,11 @@ module Grit
       epath = File.expand_path(path)
 
       if File.exist?(File.join(epath, '.git'))
-        self.working_dir = epath
-        self.path = File.join(epath, '.git')
+        @working_dir = epath
+        @path = File.join(epath, '.git')
         @bare = false
       elsif File.exist?(epath) && (epath =~ /\.git$/ || options[:is_bare])
-        self.path = epath
+        @path = epath
         @bare = true
       elsif File.exist?(epath)
         raise InvalidGitRepositoryError.new(epath)
@@ -56,7 +56,7 @@ module Grit
         raise NoSuchPathError.new(epath)
       end
 
-      self.git = Git.new(self.path)
+      @git = Git.new(@path)
       @submodules = Grit::Submodule.create_submodules(self)
     end
 
@@ -142,7 +142,7 @@ module Grit
       default_options = {:bare => true, :shared => true}
       real_options = default_options.merge(options)
       Git.new(path).fs_mkdir('..')
-      self.git.clone(real_options, self.path, path)
+      @git.clone(real_options, @path, path)
       Repo.new(path)
     end
 
@@ -158,9 +158,9 @@ module Grit
     def fork_bare_from(path, options = {})
       default_options = {:bare => true, :shared => true}
       real_options = default_options.merge(options)
-      Git.new(self.path).fs_mkdir('..')
-      self.git.clone(real_options, path, self.path)
-      Repo.new(self.path)
+      Git.new(@path).fs_mkdir('..')
+      @git.clone(real_options, path, @path)
+      Repo.new(@path)
     end
 
     # Public: Return the full Git objects from the given SHAs.  Only Commit
@@ -201,7 +201,7 @@ module Grit
     #
     # Returns String
     def description
-      self.git.fs_read('description').chomp
+      @git.fs_read('description').chomp
     end
 
     # Execute a hook
@@ -210,7 +210,7 @@ module Grit
     #
     # Returns Grit::Process or nil
     def hook(name, timeout = 10)
-      file = File.join(self.git.git_dir, 'hooks', name)
+      file = File.join(@git.git_dir, 'hooks', name)
 
       if File.executable?(file)
         Grit::Process.new(file, {}, { :timeout => timeout })
@@ -251,29 +251,47 @@ module Grit
     #
     # Returns true/false if commit worked
     def commit_index(message)
-      self.git.commit({}, '-m', message)
+      @git.commit({:m => message})
     end
 
     # Commits all tracked and modified files
     #
     # Returns true/false if commit worked
     def commit_all(message)
-      self.git.commit({}, '-a', '-m', message)
+      @git.commit({:a => true, :m => message})
+    end
+
+    # Commits specified files, files must be known to git
+    def commit_files(message, files)
+      @git.commit({:m => message}, *files)
+    end
+
+    # Commits specified files.
+    # If files aren't tracked, adds them
+    # If files don't changed, ignore them
+    def commit_files_force(message, files)
+      st = status
+      untracked = st.untracked.keys
+      modified = untracked + st.modified_names
+      mf = files.find_all { |f| modified.include?(f) }
+      uf = files.find_all { |f| untracked.include?(f) }
+      @git.add(*uf)  if not uf.empty?
+      commit_files(message, mf)
     end
 
     # Adds files to the index
     def add(*files)
-      self.git.add({}, *files.flatten)
+      @git.add({}, *files.flatten)
     end
 
     # Remove files from the index
     def remove(*files)
-      self.git.rm({}, *files.flatten)
+      @git.rm({}, *files.flatten)
     end
 
 
     def blame_tree(commit, path = nil)
-      commit_array = self.git.blame_tree(commit, path)
+      commit_array = @git.blame_tree(commit, path)
 
       final_array = {}
       commit_array.each do |file, sha|
@@ -328,15 +346,15 @@ module Grit
     end
 
     def remote_list
-      self.git.list_remotes
+      @git.list_remotes
     end
 
     def remote_add(name, url)
-      self.git.remote({}, 'add', name, url)
+      @git.remote({}, 'add', name, url)
     end
 
     def remote_fetch(name)
-      self.git.fetch({}, name)
+      @git.fetch({}, name)
     end
 
     # takes an array of remote names and last pushed dates
@@ -350,7 +368,7 @@ module Grit
     def remotes_fetch_needed(remotes)
       remotes.each do |remote, date|
         # TODO: check against date
-        self.remote_fetch(remote)
+        remote_fetch(remote)
       end
     end
 
@@ -430,7 +448,7 @@ module Grit
     def commit_deltas_from(other_repo, ref = "master", other_ref = "master")
       # TODO: we should be able to figure out the branch point, rather than
       # rev-list'ing the whole thing
-      repo_refs       = self.git.rev_list({}, ref).strip.split("\n")
+      repo_refs       = @git.rev_list({}, ref).strip.split("\n")
       other_repo_refs = other_repo.git.rev_list({}, other_ref).strip.split("\n")
 
       (other_repo_refs - repo_refs).map do |ref|
@@ -440,13 +458,13 @@ module Grit
 
     def objects(refs)
       refs = refs.split(/\s+/) if refs.respond_to?(:to_str)
-      self.git.rev_list({:objects => true, :timeout => false}, *refs).
+      @git.rev_list({:objects => true, :timeout => false}, *refs).
         split("\n").map { |a| a[0, 40] }
     end
 
     def commit_objects(refs)
       refs = refs.split(/\s+/) if refs.respond_to?(:to_str)
-      self.git.rev_list({:timeout => false}, *refs).split("\n").map { |a| a[0, 40] }
+      @git.rev_list({:timeout => false}, *refs).split("\n").map { |a| a[0, 40] }
     end
 
     def objects_between(ref1, ref2 = nil)
@@ -455,7 +473,7 @@ module Grit
       else
         refs = ref1
       end
-      self.objects(refs)
+      objects(refs)
     end
 
     def diff_objects(commit_sha, parents = true)
@@ -463,14 +481,14 @@ module Grit
       Grit.no_quote = true
       if parents
         # PARENTS:
-        revs = self.git.diff_tree({:timeout => false, :r => true, :t => true, :m => true}, commit_sha).
+        revs = @git.diff_tree({:timeout => false, :r => true, :t => true, :m => true}, commit_sha).
           strip.split("\n").map{ |a| r = a.split(' '); r[3] if r[1] != '160000' }
       else
         # NO PARENTS:
-        revs = self.git.native(:ls_tree, {:timeout => false, :r => true, :t => true}, commit_sha).
+        revs = @git.native(:ls_tree, {:timeout => false, :r => true, :t => true}, commit_sha).
           split("\n").map{ |a| a.split("\t").first.split(' ')[2] }
       end
-      revs << self.commit(commit_sha).tree.id
+      revs << commit(commit_sha).tree.id
       Grit.no_quote = false
       return revs.uniq.compact
     end
@@ -504,7 +522,7 @@ module Grit
       actual_options  = default_options.merge(options)
       arg = path ? [commit, '--', path] : [commit]
       begin
-        commits = self.git.log(actual_options, *arg)
+        commits = @git.log(actual_options, *arg)
         commit_list = Commit.list_from_string(self, commits)
       rescue Grit::Git::CommandFailed
         # prevent fail if repo is empty
@@ -518,7 +536,7 @@ module Grit
     #   +b+ is the other commit
     #   +paths+ is an optional list of file paths on which to restrict the diff
     def diff(a, b, *paths)
-      diff = self.git.native('diff', {}, a, b, '--', *paths)
+      diff = @git.native('diff', {}, a, b, '--', *paths)
 
       if diff =~ /diff --git a/
         diff = diff.sub(/.*?(diff --git a)/m, '\1')
@@ -554,7 +572,7 @@ module Grit
     def archive_tar(treeish = 'master', prefix = nil)
       options = {}
       options[:prefix] = prefix if prefix
-      self.git.archive(options, treeish)
+      @git.archive(options, treeish)
     end
 
     # Archive and gzip the given treeish
@@ -575,7 +593,7 @@ module Grit
     def archive_tar_gz(treeish = 'master', prefix = nil)
       options = {}
       options[:prefix] = prefix if prefix
-      self.git.archive(options, treeish, "| gzip -n")
+      @git.archive(options, treeish, "| gzip -n")
     end
 
     # Write an archive directly to a file
@@ -590,7 +608,7 @@ module Grit
       options = {}
       options[:prefix] = prefix if prefix
       options[:format] = format if format
-      self.git.archive(options, treeish, "| #{pipe} > #{filename}")
+      @git.archive(options, treeish, "| #{pipe} > #{filename}")
     end
 
     # Enable git-daemon serving of this repository by writing the
@@ -598,7 +616,7 @@ module Grit
     #
     # Returns nothing
     def enable_daemon_serve
-      self.git.fs_write(DAEMON_EXPORT_FILE, '')
+      @git.fs_write(DAEMON_EXPORT_FILE, '')
     end
 
     # Disable git-daemon serving of this repository by ensuring there is no
@@ -606,11 +624,11 @@ module Grit
     #
     # Returns nothing
     def disable_daemon_serve
-      self.git.fs_delete(DAEMON_EXPORT_FILE)
+      @git.fs_delete(DAEMON_EXPORT_FILE)
     end
 
     def gc_auto
-      self.git.gc({:auto => true})
+      @git.gc({:auto => true})
     end
 
     # The list of alternates for this repo
@@ -618,7 +636,7 @@ module Grit
     # Returns Array[String] (pathnames of alternates)
     def alternates
       alternates_path = "objects/info/alternates"
-      self.git.fs_read(alternates_path).strip.split("\n")
+      @git.fs_read(alternates_path).strip.split("\n")
     rescue Errno::ENOENT
       []
     end
@@ -635,9 +653,9 @@ module Grit
       end
 
       if alts.empty?
-        self.git.fs_write('objects/info/alternates', '')
+        @git.fs_write('objects/info/alternates', '')
       else
-        self.git.fs_write('objects/info/alternates', alts.join("\n"))
+        @git.fs_write('objects/info/alternates', alts.join("\n"))
       end
     end
 
@@ -651,7 +669,7 @@ module Grit
 
     def update_ref(head, commit_sha)
       return nil if !commit_sha || (commit_sha.size != 40)
-      self.git.fs_write("refs/heads/#{head}", commit_sha)
+      @git.fs_write("refs/heads/#{head}", commit_sha)
       commit_sha
     end
 
@@ -661,9 +679,9 @@ module Grit
     # Returns nothing
     def rename(name)
       if @bare
-        self.git.fs_move('/', "../#{name}")
+        @git.fs_move('/', "../#{name}")
       else
-        self.git.fs_move('/', "../../#{name}")
+        @git.fs_move('/', "../../#{name}")
       end
     end
 
