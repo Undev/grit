@@ -351,7 +351,7 @@ module Grit
         if key.to_s.size == 1
           if val == true
             argv << "-#{key}"
-          elsif val == false
+          elsif !val # also handle nil
             # ignore
           else
             argv << "-#{key}"
@@ -360,7 +360,7 @@ module Grit
         else
           if val == true
             argv << "--#{key.to_s.tr('_', '-')}"
-          elsif val == false
+          elsif !val # also handle nil
             # ignore
           else
             argv << "--#{key.to_s.tr('_', '-')}=#{val}"
