@@ -707,7 +707,7 @@ module Grit
       subm
     end
 
-    def submodule_update(opts)
+    def submodule_update(opts={})
       recursive = opts[:recursive]
       @submodules.values.foreach do |subm|
         subm.update(opts)

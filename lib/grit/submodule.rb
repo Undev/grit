@@ -124,7 +124,7 @@ module Grit
     # Runs git submodule update @path
     # Options:
     # :init -- perform initialization too
-    def update(opts)
+    def update(opts={})
       init = opts[:init]
       submodule({:init => init}, "update")
     end
