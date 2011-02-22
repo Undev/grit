@@ -68,7 +68,7 @@ module Grit
     def self.add(parent, url, path='')
       submodule(parent, {}, 'add', url, path)
       if path == ''
-        (path, _) = self.paths.find do |p|
+        (path, _) = self.paths(parent).find do |p|
           !parent.submodules.has_key?(p) && url.include?(p)
         end
       end
