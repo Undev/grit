@@ -94,7 +94,6 @@ module Grit
       def construct_status
         @files = ls_files
 
-        cwd = Dir.getwd()
         Dir.chdir(@base.working_dir) do
           # find untracked in working dir
           Dir.glob('**/*') do |file|
@@ -117,7 +116,6 @@ module Grit
             @files[k] = StatusFile.new(@base, file_hash)
           end
         end
-        Dir.chdir(cwd)
       end
 
       # compares the index and the working directory
