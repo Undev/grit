@@ -5,14 +5,11 @@ module Grit
     # Public: The Grit::Repo instance for submodule repo
     attr_reader :repo
 
-    # Public: The String of name of submodule (relative path inside parent repo)
-    attr_reader :name
+    # Public: The String of path of submodule (relative path inside parent repo)
+    attr_reader :path
 
     # Public: url of submodule remote
     attr_reader :url
-
-    # Public: The String of submodule id
-    attr_reader :id
 
     # Public: The Grit::Repo instance for parent repo
     attr_reader :parent
@@ -24,12 +21,10 @@ module Grit
     # Returns {} if parent doesn't contain submodules
     def self.create_submodules(parent, ref = "master")
       rst = {}
-      parent_dir = File.dirname(parent.path)
       submodules_info = self.config(parent, ref)
-      submodules_info.each do |name, atts|
-        path = File.join(parent_dir, name)
-        submodule = Submodule.new(path, name, atts['url'], atts['id'], parent)
-        rst[name] = submodule
+      submodules_info.each do |path, atts|
+        subm = Submodule.new(path, atts['url'], parent)
+        rst[path] = subm
       end
 
       rst
@@ -55,10 +50,8 @@ module Grit
         if line =~ /^\[submodule "(.+)"\]$/
           current = $1
           config[current] = {}
-          config[current]['id'] = (commit.tree/current).id
         elsif line =~ /^\t(\w+) = (.+)$/
           config[current][$1] = $2
-          config[current]['id'] = (commit.tree/$2).id if $1 == 'path'
         else
           # ignore
         end
@@ -68,17 +61,20 @@ module Grit
     end
 
     # Initializer for Grit::Submodule
-    def initialize(path, name, url, id, parent)
-      @repo = Repo.new(path)
-      @name = name
+    # path   - relative path within parent's working dir
+    # url    - url of submodule
+    # parent - Grit::Repo instance of parent repo
+    def initialize(path, url, parent)
+      full_path = File.join(parent.working_dir, path)
+      @repo = Repo.new(full_path)
+      @path = path
       @url = url
-      @id = id
       @parent = parent
     end
 
     # Pretty object inspection
     def inspect
-      %Q{#<Grit::Submodule "#{@name}" -- "#{@id}">}
+      %Q{#<Grit::Submodule "#{@path}" -- "#{@url}">}
     end
   end # Submodule
 
