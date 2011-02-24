@@ -61,12 +61,16 @@ module Grit
     #
     # Returns Grit::Head (baked)
     def self.current(repo, options = {})
-      head = repo.git.fs_read('HEAD').chomp
-      if /ref: refs\/heads\/(.*)/.match(head)
-        id = repo.git.rev_parse(options, 'HEAD')
-        commit = Commit.create(repo, :id => id)
-        self.new($1, commit)
+      begin
+        head_ref = repo.git.symbolic_ref({:q => true}, 'HEAD').chomp
+      rescue Git::CommandFailed => err
+        raise  if err.exitstatus != 1
+        return nil
       end
+      id = repo.git.rev_parse(options, head_ref)
+      commit = Commit.create(repo, :id => id)
+      (_, _, branch_name) = head_ref.split('/')
+      self.new(branch_name, commit)
     end
 
   end # Head
