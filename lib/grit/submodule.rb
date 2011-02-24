@@ -111,8 +111,8 @@ module Grit
     def status
       {
         :initialized? => initialized?,
-        :matches? => commit_matches?,
-        :commit => commit_sha,
+        :commit_matches? => commit_matches?,
+        :commit_sha => commit_sha,
         :ref => ref
       }
     end
@@ -149,7 +149,9 @@ module Grit
     end
 
     def ref
-      raw_status().split("\n")[0].split(" ")[2]
+      # ugly.
+      # TODO: get Ref or Commit object
+      raw_status().split("\n")[0].split(" ")[2][1..-1]
     end
 
     def has_file?(file)

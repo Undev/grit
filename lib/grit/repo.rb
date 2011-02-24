@@ -270,7 +270,7 @@ module Grit
     # If files aren't tracked, adds them
     # If files don't changed, ignore them
     def commit_files_force(message, files)
-      st = status
+      st = status()
       untracked = st.untracked.keys
       modified = untracked + st.modified_names
       mf = files.find_all { |f| modified.include?(f) }
