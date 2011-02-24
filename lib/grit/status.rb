@@ -17,6 +17,11 @@ module Grit
       @files.select { |k, f| f.type == 'M' }
     end
 
+    def conflicted
+      @files.select { |k, f| f.type == 'U' }
+    end
+    alias_method :unmerged, :conflicted
+
     def added
       @files.select { |k, f| f.type == 'A' }
     end
@@ -98,36 +103,29 @@ module Grit
       def construct_status
         @files = ls_files
 
-        Dir.chdir(@base.working_dir) do
-          # find untracked in working dir
-          Dir.glob('**/*') do |file|
-            condition = [!@files.has_key?(file),
-                         !@base.submodules_have_file?(file),
-                         !File.directory?(file)
-                        ]
-            if condition.all?
-              @files[file] = {:path => file, :untracked => true}
-            end
-          end
+        # find untracked in working dir
+        ls_files_untracked.each do |file|
+          @files[file] = {:path => file, :untracked => true}
+        end
 
-          # "git diff-files" and "git diff-index" include
-          # spurious changes filtered out by "git status".
-          limit = status_files
+        # find modified in tree
+        diff_files({:ignore_submodules => 'untracked',
+                     :diff_filter => 'M'}).each do |path, data|
+          @files[path].merge!(data)
+        end
 
-          # find modified in tree
-          diff_files.each do |path, data|
-            @files[path] ? @files[path].merge!(data) : @files[path] = data
-            @files[path] ? @files[path].merge!(data) : @files[path] = data if limit.include?(path)
-          end
+        # find unmerged (conflicted) in tree
+        diff_files({:diff_filter => 'U'}).each do |path, data|
+          @files[path].merge!(data)
+        end
 
-          # find added but not committed - new files
-          diff_index('HEAD').each do |path, data|
-            @files[path] ? @files[path].merge!(data) : @files[path] = data if limit.include?(path)
-          end
+        # find added but not committed - new files
+        diff_index('HEAD', {:diff_filter => 'A'}).each do |path, data|
+          @files[path].merge!(data)
+        end
 
-          @files.each do |k, file_hash|
-            @files[k] = StatusFile.new(@base, file_hash)
-          end
+        @files.each do |k, file_hash|
+          @files[k] = StatusFile.new(@base, file_hash)
         end
       end
 
@@ -137,9 +135,9 @@ module Grit
       end
 
       # compares the index and the working directory
-      def diff_files
+      def diff_files(opts={})
         hsh = {}
-        @base.git.diff_files.split("\n").each do |line|
+        @base.git.diff_files(opts).split("\n").each do |line|
           (info, file) = line.split("\t")
           (mode_src, mode_dest, sha_src, sha_dest, type) = info.split
           hsh[file] = {:path => file, :mode_file => mode_src.to_s[1, 7], :mode_index => mode_dest,
@@ -149,10 +147,10 @@ module Grit
       end
 
       # compares the index and the repository
-      def diff_index(treeish)
+      def diff_index(treeish, opts={})
         hsh = {}
         begin
-          @base.git.diff_index({}, treeish).split("\n").each do |line|
+          @base.git.diff_index(opts, treeish).split("\n").each do |line|
             (info, file) = line.split("\t")
             (mode_src, mode_dest, sha_src, sha_dest, type) = info.split
             hsh[file] = {:path => file, :mode_repo => mode_src.to_s[1, 7], :mode_index => mode_dest,
@@ -174,6 +172,10 @@ module Grit
           hsh[file] = {:path => file, :mode_index => mode, :sha_index => sha, :stage => stage}
         end
         hsh
+      end
+
+      def ls_files_untracked
+        @base.git.ls_files({:exclude_standard => true, :others => true}).split
       end
   end
 
