@@ -1,10 +1,55 @@
 module Grit
-  class InvalidGitRepositoryError < StandardError
-  end
+  module Errors
 
-  class NoSuchPathError < StandardError
-  end
+    class InvalidGitRepositoryError < StandardError
+    end
 
-  class InvalidObjectType < StandardError
+    class NoSuchPathError < StandardError
+    end
+
+    class InvalidObjectType < StandardError
+    end
+
+    class GitTimeout < RuntimeError
+      attr_reader :command
+      attr_reader :bytes_read
+
+      def initialize(command = nil, bytes_read = nil)
+        @command = command
+        @bytes_read = bytes_read
+      end
+    end
+
+    # Raised when a native git command exits with non-zero.
+    class CommandFailed < StandardError
+      # The full git command that failed as a String.
+      attr_reader :command
+
+      # The integer exit status.
+      attr_reader :exitstatus
+
+      # Everything output on the command's stderr as a String.
+      attr_reader :err
+
+      def initialize(command, exitstatus=nil, err='')
+        if exitstatus
+          @command = command
+          @exitstatus = exitstatus
+          @err = err
+          super "Command exited with #{exitstatus}: #{command}\n #{err}"
+        else
+          super command
+        end
+      end
+    end
+
+    # Exception raised when the total number of bytes output on the command's
+    # stderr and stdout streams exceeds the maximum output size (:max option).
+    class MaximumOutputExceeded < StandardError
+    end
+
+    # Exception raised when timeout is exceeded.
+    class TimeoutExceeded < StandardError
+    end
   end
 end

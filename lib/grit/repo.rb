@@ -37,9 +37,9 @@ module Grit
     #   r = Repo.new("/Users/tom/public/bare", {:is_bare => true})
     #
     # Returns a newly initialized Grit::Repo.
-    # Raises Grit::InvalidGitRepositoryError if the path exists but is not
-    #   a Git repository.
-    # Raises Grit::NoSuchPathError if the path does not exist.
+    # Raises Grit::Errors::InvalidGitRepositoryError if the path
+    #   exists but is not a Git repository.
+    # Raises Grit::Errors::NoSuchPathError if the path does not exist.
     def initialize(path, options = {})
       epath = File.expand_path(path)
 
@@ -51,9 +51,9 @@ module Grit
         @path = epath
         @bare = true
       elsif File.exist?(epath)
-        raise InvalidGitRepositoryError.new(epath)
+        raise Git::Errors::InvalidGitRepositoryError.new(epath)
       else
-        raise NoSuchPathError.new(epath)
+        raise Git::Errors::NoSuchPathError.new(epath)
       end
 
       @git = Git.new(@path)
@@ -333,7 +333,7 @@ module Grit
     # Returns nil if the committish value is not found.
     def recent_tag_name(committish = nil, options = {})
       value = git.describe({:always => true}.update(options), committish.to_s).to_s.strip
-    rescue Grit::Git::CommandFailed
+    rescue Grit::Errors::CommandFailed
       nil
     end
 
@@ -524,7 +524,7 @@ module Grit
       begin
         commits = @git.log(actual_options, *arg)
         commit_list = Commit.list_from_string(self, commits)
-      rescue Grit::Git::CommandFailed
+      rescue Grit::Errors::CommandFailed
         # prevent fail if repo is empty
         raise if !branches().empty?
       end

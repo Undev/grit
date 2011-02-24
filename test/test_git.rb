@@ -18,7 +18,7 @@ class TestGit < Test::Unit::TestCase
     Grit.stubs(:log)
     Grit.expects(:log).with(includes("git: 'bad' is not a git command"))
     @git.bad
-  rescue Grit::Git::CommandFailed
+  rescue Grit::Errors::CommandFailed
   end
 
   def test_logs_stderr_when_skipping_timeout
@@ -26,7 +26,7 @@ class TestGit < Test::Unit::TestCase
     Grit.stubs(:log)
     Grit.expects(:log).with(includes("git: 'bad' is not a git command"))
     @git.bad :timeout => false
-  rescue Grit::Git::CommandFailed
+  rescue Grit::Errors::CommandFailed
   end
 
   def test_transform_options
@@ -48,19 +48,19 @@ class TestGit < Test::Unit::TestCase
   def test_can_skip_timeout
     Timeout.expects(:timeout).never
     @git.something(:timeout => false)
-  rescue Grit::Git::CommandFailed
+  rescue Grit::Errors::CommandFailed
   end
 
   def test_raises_if_too_many_bytes
     fail if jruby?
-    assert_raises Grit::Git::GitTimeout do
+    assert_raises Grit::Errors::GitTimeout do
       @git.sh "yes | head -#{Grit::Git.git_max_size + 1}"
     end
   end
 
   def test_raises_on_slow_shell
     Grit::Git.git_timeout = 0.0000001
-    assert_raises Grit::Git::GitTimeout do
+    assert_raises Grit::Errors::GitTimeout do
       @git.version
     end
   ensure
@@ -125,7 +125,7 @@ class TestGit < Test::Unit::TestCase
 
   def test_native_process_info_option_on_failure
     @git.no_such_command
-  rescue Grit::Git::CommandFailed => err
+  rescue Grit::Errors::CommandFailed => err
     assert_equal 1, err.exitstatus
     assert !err.err.empty?
   end
@@ -138,7 +138,7 @@ class TestGit < Test::Unit::TestCase
   end
 
   def test_raising_exceptions_when_native_git_commands_fail
-    assert_raise Grit::Git::CommandFailed do
+    assert_raise Grit::Errors::CommandFailed do
       @git.native(:bad)
     end
   end

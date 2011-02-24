@@ -2,39 +2,6 @@ require 'tempfile'
 module Grit
 
   class Git
-    class GitTimeout < RuntimeError
-      attr_reader :command
-      attr_reader :bytes_read
-
-      def initialize(command = nil, bytes_read = nil)
-        @command = command
-        @bytes_read = bytes_read
-      end
-    end
-
-    # Raised when a native git command exits with non-zero.
-    class CommandFailed < StandardError
-      # The full git command that failed as a String.
-      attr_reader :command
-
-      # The integer exit status.
-      attr_reader :exitstatus
-
-      # Everything output on the command's stderr as a String.
-      attr_reader :err
-
-      def initialize(command, exitstatus=nil, err='')
-        if exitstatus
-          @command = command
-          @exitstatus = exitstatus
-          @err = err
-          super "Command exited with #{exitstatus}: #{command}\n #{err}"
-        else
-          super command
-        end
-      end
-    end
-
     undef_method :clone
 
     include GitRuby
@@ -198,7 +165,7 @@ module Grit
         native(:read_tree, options.dup, head_sha)
         stdin = native(:diff, options.dup, "#{applies_sha}^", applies_sha)
         native(:apply, options.merge(:check => true, :cached => true, :input => stdin))
-      rescue CommandFailed => fail
+      rescue Grit::Errors::CommandFailed => fail
         status += fail.exitstatus
       end
       status
@@ -230,7 +197,7 @@ module Grit
       begin
         native(:read_tree, options.dup, head_sha)
         native(:apply, options.merge(:cached => true, :input => patch))
-      rescue CommandFailed => err
+      rescue Grit::Errors::CommandFailed => err
         return false if err.exitstatus != 128
       end
       native(:write_tree, :env => options[:env]).to_s.chomp!
@@ -270,9 +237,9 @@ module Grit
     #   set. The exitstatus is an small integer that was the process's exit
     #   status. The out and err elements are the data written to stdout and
     #   stderr as Strings.
-    # Raises Grit::Git::GitTimeout when the timeout is exceeded or when more
+    # Raises Grit::Errors::GitTimeout when the timeout is exceeded or when more
     #   than Grit::Git.git_max_size bytes are output.
-    # Raises Grit::Git::CommandFailed if the git command exits
+    # Raises Grit::Errors::CommandFailed if the git command exits
     #   with a non-zero exit status. The CommandFailed's #command,
     #   #exitstatus, and #err attributes can be used to retrieve additional
     #   detail about the error.
@@ -323,14 +290,14 @@ module Grit
 
       status = process.status
       if !status.success?
-        raise CommandFailed.new(argv.join(' '), status.exitstatus, process.err)
+        raise Grit::Errors::CommandFailed.new(argv.join(' '), status.exitstatus, process.err)
       elsif process_info
         [status.exitstatus, process.out, process.err]
       else
         process.out
       end
-    rescue Grit::Process::TimeoutExceeded, Grit::Process::MaximumOutputExceeded
-      raise GitTimeout, argv.join(' ')
+    rescue Grit::Errors::TimeoutExceeded, Grit::Errors::MaximumOutputExceeded
+      raise Grit::Errors::GitTimeout, argv.join(' ')
     end
 
     # Methods not defined by a library implementation execute the git command
@@ -427,8 +394,8 @@ module Grit
           :max     => Git.git_max_size
         )
       [process.out, process.err]
-    rescue Grit::Process::TimeoutExceeded, Grit::Process::MaximumOutputExceeded
-      raise GitTimeout, command
+    rescue Grit::Errors::TimeoutExceeded, Grit::Errors::MaximumOutputExceeded
+      raise Grit::Errors::GitTimeout, command
     end
 
     def wild_sh(command, &block)

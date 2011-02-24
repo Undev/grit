@@ -110,15 +110,6 @@ module Grit
       raise
     end
 
-    # Exception raised when the total number of bytes output on the command's
-    # stderr and stdout streams exceeds the maximum output size (:max option).
-    class MaximumOutputExceeded < StandardError
-    end
-
-    # Exception raised when timeout is exceeded.
-    class TimeoutExceeded < StandardError
-    end
-
     # Maximum buffer size for reading
     BUFSIZE = (32 * 1024)
 
@@ -134,7 +125,8 @@ module Grit
     #
     # Returns an [out, err] tuple where both elements are strings with all
     #   data written to the stdout and stderr streams, respectively.
-    # Raises TimeoutExceeded when all data has not been read / written within
+    # Raises Grit::Errors::TimeoutExceeded when all data has
+    #   not been read / written within
     #   the duration specified in the timeout argument.
     # Raises MaximumOutputExceeded when the total number of bytes output
     #   exceeds the amount specified by the max argument.
@@ -153,7 +145,7 @@ module Grit
       t = timeout
       while readers.any? || writers.any?
         ready = IO.select(readers, writers, readers + writers, t)
-        raise TimeoutExceeded if ready.nil?
+        raise Grit::Errors::TimeoutExceeded if ready.nil?
 
         # write to stdin stream
         ready[1].each do |fd|
@@ -186,12 +178,12 @@ module Grit
         @runtime = Time.now - start
         if timeout
           t = timeout - @runtime
-          raise TimeoutExceeded if t < 0.0
+          raise Grit::Errors::TimeoutExceeded if t < 0.0
         end
 
         # maybe we've hit our max output
         if max && ready[0].any? && (out.size + err.size) > max
-          raise MaximumOutputExceeded
+          raise Grit::Errors::MaximumOutputExceeded
         end
       end
 

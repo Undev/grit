@@ -53,7 +53,7 @@ module Grit
         when "tag"
           BaseTreeEntry.create(repo, :id => id, :mode => mode, :name => name)
         else
-          raise Grit::InvalidObjectType, type
+          raise Grit::Errors::InvalidObjectType, type
       end
     end
 

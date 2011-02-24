@@ -231,14 +231,14 @@ module Grit
         #if @bytes_read > 5242880 # 5.megabytes
         #  bytes = @bytes_read
         #  @bytes_read = 0
-        #  raise Grit::Git::GitTimeout.new(command, bytes)
+        #  raise Grit::Errors::GitTimeout.new(command, bytes)
         #end
 
         ret
       rescue Timeout::Error => e
         bytes = @bytes_read
         @bytes_read = 0
-        raise Grit::Git::GitTimeout.new(command, bytes)
+        raise Grit::Errors::GitTimeout.new(command, bytes)
       end
 
       def looking_for(commit, path = nil)
