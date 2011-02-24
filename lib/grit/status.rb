@@ -87,6 +87,10 @@ module Grit
         end
       end
 
+      def raw_data
+        File.open(File.join(@base.working_dir, @path), 'rb') { |f| f.read }
+      end
+
     end
 
     private
