@@ -81,9 +81,9 @@ module Grit
 
       def blob(type = :index)
         if type == :repo
-          @base.object(@sha_repo)
+          @base.blob(@sha_repo)
         else
-          @base.object(@sha_index) rescue @base.object(@sha_repo)
+          @base.blob(@sha_index) rescue @base.blob(@sha_repo)
         end
       end
 
