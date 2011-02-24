@@ -692,6 +692,7 @@ module Grit
 
     # Perform pull
     # Returns short SHA for fetched and merged revision
+    # Returns nil if merge failed due conflicts
     def pull(opts={}, *args)
       st = @git.pull(opts, *args)
       line = st.split("\n")[0]
@@ -699,6 +700,10 @@ module Grit
       new_commit = commits.split('..')[1]
 
       new_commit
+    rescue Grit::Errors::CommandFailed
+      raise  if status().conflicted.empty?
+
+      nil
     end
 
     def submodule_add(url, path='')
