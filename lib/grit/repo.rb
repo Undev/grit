@@ -706,6 +706,13 @@ module Grit
       nil
     end
 
+    # Finds conflicted file by *path* in and
+    # creates ConflictedFile object
+    def conflicted_files
+      conflicted = status.conflicted()
+      conflicted.merge(conflicted) { |p, f| ConflictedFile.create_from_file(f) }
+    end
+
     def submodule_add(url, path='')
       subm = Submodule.add(self, url, path)
       @submodules[subm.path] = subm

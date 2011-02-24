@@ -69,6 +69,7 @@ module Grit
       attr_accessor :path, :type, :stage, :untracked
       attr_accessor :mode_index, :mode_repo
       attr_accessor :sha_index, :sha_repo
+      attr_reader :base
 
       @base = nil
 
@@ -93,7 +94,7 @@ module Grit
       end
 
       def raw_data
-        File.open(File.join(@base.working_dir, @path), 'rb') { |f| f.read }
+        File.open(File.join(@base.working_dir, @path), 'r') { |f| f.read }
       end
 
     end

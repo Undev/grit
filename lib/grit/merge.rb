@@ -38,8 +38,33 @@ module Grit
 
     # Pretty object inspection
     def inspect
-      %Q{#<Grit::Merge}
+      %Q{#<Grit::#{self.class.name}}
     end
   end # Merge
+
+  class ConflictedFile < Merge
+    attr_reader :base, :path
+
+    # Creates ConflictedFile object from Status::StatusFile
+    def self.create_from_file(st_file)
+      self.new(st_file.base, st_file.path, st_file.raw_data)
+    end
+
+    def initialize(base, path, str)
+      super(str)
+      @base = base
+      @path = path
+    end
+
+    def write_content(text)
+      File.open(@path, "w") { |f| f.write(text) }
+    end
+
+    # Resolves conflict -- add file to staged area
+    def resolve
+      @base.add(@path)
+    end
+
+  end
 
 end # Grit
