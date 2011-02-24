@@ -110,6 +110,7 @@ class TestGit < Test::Unit::TestCase
     args = [
             [Grit::Git.git_binary,
              "--git-dir=#{@git.git_dir}",
+             "--no-pager",
              "help", "-a"],
             { 'A' => 'B' },
             {:input => nil,
