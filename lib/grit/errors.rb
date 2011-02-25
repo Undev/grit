@@ -10,6 +10,26 @@ module Grit
     class InvalidObjectType < StandardError
     end
 
+    class MergeFailed < StandardError
+    end
+
+    # TODO: rename it
+    class AutoMergeFailed < MergeFailed
+      attr_reader :conflicted
+      alias_method :unmerged, :conflicted
+      def initialize(files)
+        @conflicted = files
+      end
+    end
+
+    class UncommittedChanges < MergeFailed
+      attr_reader :changed
+      alias_method :uncommitted, :changed
+      def initialize(files)
+        @changed = files
+      end
+    end
+
     class GitTimeout < RuntimeError
       attr_reader :command
       attr_reader :bytes_read

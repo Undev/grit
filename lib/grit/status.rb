@@ -16,6 +16,7 @@ module Grit
     def changed
       @files.select { |k, f| f.type == 'M' }
     end
+    alias_method :uncommitted, :changed
 
     def conflicted
       @files.select { |k, f| f.type == 'U' }

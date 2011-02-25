@@ -690,20 +690,43 @@ module Grit
       @git.checkout({}, branch, *paths)
     end
 
-    # Perform pull
-    # Returns short SHA for fetched and merged revision
-    # Returns nil if merge failed due conflicts
-    def pull(opts={}, *args)
-      st = @git.pull(opts, *args)
-      line = st.split("\n")[0]
-      (_, commits, _) = line.split(' ')
-      new_commit = commits.split('..')[1]
 
-      new_commit
-    rescue Grit::Errors::CommandFailed
-      raise  if status().conflicted.empty?
+    # Performs fetch.
+    # By default fetching changes from `origin master`.
+    def fetch(repo='origin', ref='master', opts={}, *args)
+      @git.pull(opts, repo, ref, *args)
+      # TODO: universal return-value
+    end
 
-      nil
+    # Performs merge with given branch
+    # Raises Grit::Errors::UncommittedChanges if there are exist
+    # changed, but not committed files.
+    # Raises Grit::Errors::AutoMergeFailed if merge failed due to conflicts.
+    def merge(committish='origin', opts={}, *args)
+      changed = status().changed
+      if changed.empty?
+        begin
+          @git.merge(opts, committish, *args)
+        rescue Grit::Errors::CommandFailed
+          conflicted = status().conflicted
+          if conflicted.empty?
+            raise
+          else
+            raise Grit::Errors::AutoMergeFailed.new(conflicted_files)
+          end
+        end
+      else
+        raise Grit::Errors::UncommittedChanges.new(changed)
+      end
+    end
+
+    # Perform fetch and then merge
+    def pull(repo='origin', ref='master', fopts={}, mopts={}, args=[[], []])
+      (fargs, margs) = args
+      fst = fetch(repo, ref, fopts, fargs)
+      mst = merge(repo, mopts, margs)
+
+      fst + mst
     end
 
     # Finds conflicted file by *path* in and
