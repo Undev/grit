@@ -168,6 +168,8 @@ module Grit
         hsh = {}
         lines = @base.git.ls_files({:stage => true})
         lines.split("\n").each do |line|
+          # can be dangerous: ls-files may return tag
+          # as first, additional column
           (info, file) = line.split("\t")
           (mode, sha, stage) = info.split
           hsh[file] = {:path => file, :mode_index => mode, :sha_index => sha, :stage => stage}
