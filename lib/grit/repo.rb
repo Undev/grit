@@ -733,6 +733,22 @@ module Grit
       fst + mst
     end
 
+    def push(repo='origin', source_ref='master', target_ref='master', opts={})
+      @git.push(opts, repo, "#{source_ref}:#{target_ref}")
+    rescue Grit::Errors::CommandFailed => err
+      # ugly, but is there right way?
+      raise  if err.exitstatus != 1
+      curr_branch = "refusing to update checked out branch: "
+      if err.include?("non-fast-forward updates were rejected")
+        raise DenyNonFastForward.new
+      elsif err.include?(curr_branch)
+        line = err.split("\n").find { |l| l.include?(curr_branch) }
+        (_, ref) = line.split(curr_branch)
+        (_, _, branch_name) = ref.split("/")
+        raise RefuseCurrentBranch.new(branch_name)
+      end
+    end
+
     # Finds conflicted file by *path* in and
     # creates ConflictedFile object
     def conflicted_files

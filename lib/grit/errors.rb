@@ -30,6 +30,19 @@ module Grit
       end
     end
 
+    class PushError < StandardError
+    end
+
+    class DenyNonFastForward < PushError
+    end
+
+    class RefuseCurrentBranch < PushError
+      attr_reader :branch_name
+      def initialize(branch_name)
+        @branch_name = branch_name
+      end
+    end
+
     class GitTimeout < RuntimeError
       attr_reader :command
       attr_reader :bytes_read
