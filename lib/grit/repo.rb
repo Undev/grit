@@ -720,6 +720,10 @@ module Grit
       end
     end
 
+    def abort_merge
+      @git.merge({:abort => true})
+    end
+
     # Perform fetch and then merge
     def pull(repo='origin', ref='master', fopts={}, mopts={}, args=[[], []])
       (fargs, margs) = args
