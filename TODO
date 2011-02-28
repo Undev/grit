@@ -1,0 +1,13 @@
+Check submodules.
+
+Add repos to Head, add checkout method fot them.
+
+Add Head to ConflictedFiles.
+
+Add blocks to Submodule methods.
+
+Improve error handling for bare repos.
+
+Consider merging with https://github.com/georgi/git_store .
+
+
