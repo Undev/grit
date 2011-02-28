@@ -4,8 +4,8 @@ Gem::Specification.new do |s|
   s.rubygems_version = '1.3.5'
 
   s.name              = 'grit'
-  s.version           = '2.4.1'
-  s.date              = '2011-01-13'
+  s.version           = '2.4.2'
+  s.date              = '2011-02-28'
   s.rubyforge_project = 'grit'
 
   s.summary     = "Ruby Git bindings."
@@ -40,6 +40,7 @@ Gem::Specification.new do |s|
     grit.gemspec
     lib/grit.rb
     lib/grit/actor.rb
+    lib/grit/base_tree_entry.rb
     lib/grit/blame.rb
     lib/grit/blob.rb
     lib/grit/commit.rb

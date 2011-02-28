@@ -102,6 +102,10 @@ task :release => :build do
   sh "gem push pkg/#{name}-#{version}.gem"
 end
 
+task :local_install => :build do
+  sh "gem install pkg/#{gem_file}"
+end
+
 task :build => :gemspec do
   sh "mkdir -p pkg"
   sh "gem build #{gemspec_file}"
