@@ -809,6 +809,39 @@ module Grit
       @submodules.values.any? { |subm| subm.has_file?(file) }
     end
 
+    def make_executable(filename)
+      oldmode = (File.stat filename).mode
+      File.chmod((oldmode | 0755), filename)
+    end
+
+    def check_hook(hook_name, allow_rewrite=false)
+      # TODO: rename func and args
+      # TODO: check for proper name?
+      hook_file = File.join(self.git_dir, 'hooks', hook_name)
+      if File.exist?(hook_file) && File.executable?(hook_file) && !allow_rewrite
+        nil
+      else
+        hook_file
+      end
+    end
+
+    def add_hook_from_file(hook_name, filename, force=false)
+      hook_file = check_hook(hook_name, force)
+      return nil  if hook_file.nil?
+      if File.exists?(filename)
+        FileUtils.cp(filename, hook_file)
+        make_executable(hook_file)
+      else
+        raise NoSuchPathError.new(filename)
+      end
+    end
+
+    def add_hook(hook_name, content, force=false)
+      hook_file = check_hook(hook_name, force)
+      return nil  if hook_file.nil?
+      File.open(name, 'w') { |f| f.write contents }
+    end
+
     # Pretty object inspection
     def inspect
       %Q{#<Grit::Repo "#{@path}">}
