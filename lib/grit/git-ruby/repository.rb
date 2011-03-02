@@ -551,9 +551,9 @@ module Grit
 
         if path && !(path == '' || path == '.' || path == './')
           paths = path.split('/')
-          paths.each do |path|
+          paths.each do |pth|
             tree = get_object_by_sha1(tree_sha)
-            if entry = tree.entry.select { |e| e.name == path }.first
+            if entry = tree.entry.select { |e| e.name == pth }.first
               tree_sha = entry.sha1 rescue nil
             else
               return false
@@ -722,11 +722,11 @@ module Grit
 
         def load_alternate_loose(path)
           # load alternate loose, too
-          each_alternate_path path do |path|
-            next if @loaded.include?(path)
-            next if !File.exist?(path)
-            load_loose(path)
-            load_alternate_loose(path)
+          each_alternate_path path do |pth|
+            next if @loaded.include?(pth)
+            next if !File.exist?(pth)
+            load_loose(pth)
+            load_alternate_loose(pth)
           end
         end
 
@@ -746,11 +746,11 @@ module Grit
         end
 
         def load_alternate_packs(path)
-          each_alternate_path path do |path|
-            full_pack = File.join(path, 'pack')
+          each_alternate_path path do |pth|
+            full_pack = File.join(pth, 'pack')
             next if @loaded_packs.include?(full_pack)
             load_packs(full_pack)
-            load_alternate_packs(path)
+            load_alternate_packs(pth)
           end
         end
 
