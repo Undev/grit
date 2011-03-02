@@ -451,8 +451,8 @@ module Grit
       repo_refs       = @git.rev_list({}, ref).strip.split("\n")
       other_repo_refs = other_repo.git.rev_list({}, other_ref).strip.split("\n")
 
-      (other_repo_refs - repo_refs).map do |ref|
-        Commit.find_all(other_repo, ref, {:max_count => 1}).first
+      (other_repo_refs - repo_refs).map do |rf|
+        Commit.find_all(other_repo, rf, {:max_count => 1}).first
       end
     end
 
