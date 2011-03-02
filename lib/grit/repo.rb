@@ -825,7 +825,7 @@ module Grit
       end
     end
 
-    def add_hook_from_file(hook_name, filename, force=false)
+    def set_hook_from_file(hook_name, filename, force=false)
       hook_file = check_hook(hook_name, force)
       return nil  if hook_file.nil?
       if File.exists?(filename)
@@ -836,7 +836,7 @@ module Grit
       end
     end
 
-    def add_hook(hook_name, content, force=false)
+    def set_hook(hook_name, content, force=false)
       hook_file = check_hook(hook_name, force)
       return nil  if hook_file.nil?
       File.open(name, 'w') { |f| f.write contents }
