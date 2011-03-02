@@ -210,27 +210,35 @@ module Grit
     #
     # Returns the pid of the new process as an integer. The process exit status
     # must be obtained using Process::waitpid.
-    def spawn(env, *argv)
-      options = (argv.pop if argv[-1].kind_of?(Hash)) || {}
-      fork do
-        # { fd => :close } in options means close that fd
-        options.each { |k,v| k.close if v == :close && !k.closed? }
-
-        # reopen stdin, stdout, and stderr on provided fds
-        STDIN.reopen(options[:in])
-        STDOUT.reopen(options[:out])
-        STDERR.reopen(options[:err])
-
-        # setup child environment
-        env.each { |k, v| ENV[k] = v }
-
-        # { :chdir => '/' } in options means change into that dir
-        ::Dir.chdir(options[:chdir]) if options[:chdir]
-
-        # do the deed
-        ::Kernel::exec(*argv)
-        exit! 1
+    # Use native Process::spawn implementation on Ruby 1.9.
+    if ::Process.respond_to?(:spawn)
+      def spawn(*argv)
+        ::Process.spawn(*argv)
       end
+    else
+      def spawn(env, *argv)
+        options = (argv.pop if argv[-1].kind_of?(Hash)) || {}
+        fork do
+          # { fd => :close } in options means close that fd
+          options.each { |k,v| k.close if v == :close && !k.closed? }
+
+          # reopen stdin, stdout, and stderr on provided fds
+          STDIN.reopen(options[:in])
+          STDOUT.reopen(options[:out])
+          STDERR.reopen(options[:err])
+
+          # setup child environment
+          env.each { |k, v| ENV[k] = v }
+
+          # { :chdir => '/' } in options means change into that dir
+          ::Dir.chdir(options[:chdir]) if options[:chdir]
+
+          # do the deed
+          ::Kernel::exec(*argv)
+          exit! 1
+        end
+    end
+
     end
 
     # Start a process with spawn options and return
@@ -276,11 +284,5 @@ module Grit
       $?
     end
 
-    # Use native Process::spawn implementation on Ruby 1.9.
-    if ::Process.respond_to?(:spawn)
-      def spawn(*argv)
-        ::Process.spawn(*argv)
-      end
-    end
   end
 end
