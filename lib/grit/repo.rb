@@ -51,9 +51,9 @@ module Grit
         @path = epath
         @bare = true
       elsif File.exist?(epath)
-        raise Git::Errors::InvalidGitRepositoryError.new(epath)
+        raise Grit::Errors::InvalidGitRepositoryError.new(epath)
       else
-        raise Git::Errors::NoSuchPathError.new(epath)
+        raise Grit::Errors::NoSuchPathError.new(epath)
       end
 
       @git = Git.new(@path)
@@ -694,7 +694,7 @@ module Grit
     # Performs fetch.
     # By default fetching changes from `origin master`.
     def fetch(repo='origin', ref='master', opts={}, *args)
-      @git.pull(opts, repo, ref, *args)
+      @git.fetch(opts, repo, ref, *args)
       # TODO: universal return-value
     end
 
@@ -727,8 +727,8 @@ module Grit
     # Perform fetch and then merge
     def pull(repo='origin', ref='master', fopts={}, mopts={}, args=[[], []])
       (fargs, margs) = args
-      fst = fetch(repo, ref, fopts, fargs)
-      mst = merge(repo, mopts, margs)
+      fst = fetch(repo, ref, fopts, *fargs)
+      mst = merge(repo, mopts, *margs)
 
       fst + mst
     end

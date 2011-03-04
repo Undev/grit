@@ -69,20 +69,14 @@ module Grit
           @command = command
           @exitstatus = exitstatus
           @err = err
-          super "Command exited with #{exitstatus}: #{command}\n #{err}"
+          message = "Command failed [#{exitstatus}]: #{command}"
+          message << "\n\n" << err unless err.nil? || err.empty?
+          super message
         else
           super command
         end
       end
     end
 
-    # Exception raised when the total number of bytes output on the command's
-    # stderr and stdout streams exceeds the maximum output size (:max option).
-    class MaximumOutputExceeded < StandardError
-    end
-
-    # Exception raised when timeout is exceeded.
-    class TimeoutExceeded < StandardError
-    end
   end
 end
