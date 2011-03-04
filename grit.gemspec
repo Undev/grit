@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
 
   s.name              = 'grit'
   s.version           = '2.4.2'
-  s.date              = '2011-02-28'
+  s.date              = '2011-03-04'
   s.rubyforge_project = 'grit'
 
   s.summary     = "Ruby Git bindings."
@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
     PURE_TODO
     README.md
     Rakefile
+    TODO
     benchmarks.rb
     benchmarks.txt
     examples/ex_add_commit.rb
@@ -64,7 +65,6 @@ Gem::Specification.new do |s|
     lib/grit/jruby.rb
     lib/grit/lazy.rb
     lib/grit/merge.rb
-    lib/grit/process.rb
     lib/grit/ref.rb
     lib/grit/repo.rb
     lib/grit/ruby1.9.rb
