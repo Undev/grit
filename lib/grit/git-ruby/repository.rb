@@ -525,10 +525,10 @@ module Grit
                changed << [full, 'removed', nil, hsh[:sha]]
              end
            end
-         end if t2
+        end if t2
 
-         changed
-       end
+        changed
+      end
 
       # returns true if the files in path_limiter were changed, or no path limiter
       # used by the log() function when passed with a path_limiter
