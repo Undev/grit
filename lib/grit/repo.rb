@@ -281,7 +281,7 @@ module Grit
 
     # Adds files to the index
     def add(*files)
-      @git.add({}, *files.flatten)
+      @git.add({}, *files)
     end
 
     # Remove files from the index
@@ -817,7 +817,7 @@ module Grit
     def check_hook(hook_name, allow_rewrite=false)
       # TODO: rename func and args
       # TODO: check for proper name?
-      hook_file = File.join(self.git_dir, 'hooks', hook_name)
+      hook_file = File.join(@git.git_dir, 'hooks', hook_name)
       if File.exist?(hook_file) && File.executable?(hook_file) && !allow_rewrite
         nil
       else
