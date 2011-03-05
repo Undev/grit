@@ -125,6 +125,9 @@ module Grit
       self.list_from_string(repo, output)
     rescue Grit::GitRuby::Repository::NoSuchShaFound
       []
+    rescue Grit::Errors::CommandFailed
+      raise if !branches().empty?
+      []
     end
 
     # Parse out commit information into an array of baked Commit objects

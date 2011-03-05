@@ -38,6 +38,7 @@ module Grit
     # Returns {} if no .gitmodules file was found
     def self.config(repo, ref = "master")
       commit = repo.commit(ref)
+      return {} unless commit
       blob = commit.tree/'.gitmodules'
       return {} unless blob
 
