@@ -526,7 +526,7 @@ module Grit
         commit_list = Commit.list_from_string(self, commits)
       rescue Grit::Errors::CommandFailed
         # prevent fail if repo is empty
-        raise if !branches().empty?
+        raise if !branches.empty?
       end
       commit_list
     end

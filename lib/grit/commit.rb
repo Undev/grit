@@ -126,7 +126,7 @@ module Grit
     rescue Grit::GitRuby::Repository::NoSuchShaFound
       []
     rescue Grit::Errors::CommandFailed
-      raise if !branches().empty?
+      raise if !repo.branches.empty?
       []
     end
 
