@@ -710,11 +710,11 @@ module Grit
     # Raises Grit::Errors::UncommittedChanges if there are exist
     # changed, but not committed files.
     # Raises Grit::Errors::AutoMergeFailed if merge failed due to conflicts.
-    def merge(committish='origin', opts={}, *args)
+    def merge(committish='master', opts={})
       changed = status().changed
       if changed.empty?
         begin
-          @git.merge(opts, committish, *args)
+          @git.merge(opts, committish)
         rescue Grit::Errors::CommandFailed
           conflicted = status().conflicted
           if conflicted.empty?
