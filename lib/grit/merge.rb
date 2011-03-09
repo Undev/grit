@@ -9,7 +9,10 @@ module Grit
     attr_reader :conflicts, :text, :sections
 
     def initialize(str)
-      status = STATUS_BOTH
+      @status_both ||= 'both'
+      @status_ours ||= 'outs'
+      @status_theirs ||= 'theirs'
+      status = @status_both
 
       section = 1
       @conflicts = 0
@@ -18,13 +21,13 @@ module Grit
       lines = str.split("\n")
       lines.each do |line|
         if /^<<<<<<< (.*?)/.match(line)
-          status = STATUS_OURS
+          status = @status_ours
           @conflicts += 1
           section += 1
         elsif line == '======='
-          status = STATUS_THEIRS
+          status = @status_theirs
         elsif /^>>>>>>> (.*?)/.match(line)
-          status = STATUS_BOTH
+          status = @status_both
           section += 1
         else
           @text[section] ||= {}
@@ -46,11 +49,15 @@ module Grit
     attr_reader :base, :path
 
     # Creates ConflictedFile object from Status::StatusFile
-    def self.create_from_file(st_file)
-      self.new(st_file.base, st_file.path, st_file.raw_data)
+    # TODO: receive current branch too
+    def self.create_from_file(st_file, other_branch)
+      self.new(st_file.base, st_file.path, st_file.raw_data,
+               st_file.base.head, other_branch)
     end
 
-    def initialize(base, path, str)
+    def initialize(base, path, str, ours='ours', theirs='theirs')
+      @status_ours = ours
+      @status_theirs = theirs
       super(str)
       @base = base
       @path = path
