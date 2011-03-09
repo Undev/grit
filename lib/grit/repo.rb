@@ -694,7 +694,7 @@ module Grit
     end
 
     def checkout_paths(committish, paths, opts={})
-      @git.checkout(opts, committish), *paths)
+      @git.checkout(opts, committish, *paths)
     end
 
     # Performs fetch.
