@@ -718,7 +718,8 @@ module Grit
           if conflicted.empty?
             raise
           else
-            raise Grit::Errors::AutoMergeFailed.new(conflicted_files)
+            raise Grit::Errors::AutoMergeFailed.new(conflicted_files(committish)
+                                                    )
           end
         end
       else
@@ -757,9 +758,13 @@ module Grit
 
     # Finds conflicted file by *path* in and
     # creates ConflictedFile object
-    def conflicted_files
-      conflicted = status.conflicted()
-      conflicted.merge(conflicted) { |p, f| ConflictedFile.create_from_file(f) }
+    def conflicted_files(other_branch='theirs')
+      conflicted = {}
+      status.conflicted.each_pair do |p, f|
+        conflicted[p] = ConflictedFile.create_from_file(f, other_branch)
+      end
+
+      conflicted
     end
 
     def submodule_add(url, path='')
