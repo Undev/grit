@@ -12,7 +12,7 @@ class TestIndexStatus < Test::Unit::TestCase
 
   def test_add_array
     Git.any_instance.expects(:add).with({}, 'file1', 'file2')
-    @r.add(['file1', 'file2'])
+    @r.add('file1', 'file2')
   end
 
   def test_remove
