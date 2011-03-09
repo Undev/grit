@@ -685,11 +685,14 @@ module Grit
       end
     end
 
-    def checkout(branch, *paths)
-      branch = branch.name  if branch.is_a?(Grit::Head)
-      @git.checkout({}, branch, *paths)
+    def checkout(committish, opts={})
+      checkout_paths(committish, [], opts)
     end
 
+    def checkout_paths(committish, paths, opts={})
+      committish = committish.name  if committish.is_a?(Grit::Head)
+      @git.checkout(opts, committish, *paths)
+    end
 
     # Performs fetch.
     # By default fetching changes from `origin master`.
