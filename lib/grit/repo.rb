@@ -271,15 +271,19 @@ module Grit
     end
 
     # Commits specified files.
-    # If files aren't tracked, adds them
-    # If files don't changed, ignore them
-    def commit_files_force(message, files, opts)
+    # If files aren't tracked, adds them.
+    # If files don't changed, ignore them.
+    # Expand all paths to check inclusion.
+    def commit_files_force(message, files, opts={})
+      files = files.map { |f| File.realpath(f, @working_dir) }
       st = status()
-      untracked = st.untracked.keys
-      modified = untracked + st.modified_names
+      untracked = st.untracked.keys.map { |f| File.realpath(f, @working_dir) }
+      mod_names = st.modified_names.map { |f| File.realpath(f, @working_dir) }
+      modified = untracked + mod_names
       mf = files.find_all { |f| modified.include?(f) }
       uf = files.find_all { |f| untracked.include?(f) }
-      @git.add(*uf)  if not uf.empty?
+
+      add(*uf)  if not uf.empty?
       commit_files(message, mf, opts)
     end
 
