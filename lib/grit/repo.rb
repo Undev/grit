@@ -262,26 +262,26 @@ module Grit
     # Commits all tracked and modified files
     #
     # Returns true/false if commit worked
-    def commit_all(message)
-      @git.commit({:a => true, :m => message})
+    def commit_all(message, opts={})
+      @git.commit({:a => true, :m => message}.merge(opts))
     end
 
     # Commits specified files, files must be known to git
-    def commit_files(message, files)
-      @git.commit({:m => message}, *files)
+    def commit_files(message, files, opts={})
+      @git.commit({:m => message}.merge(opts), *files)
     end
 
     # Commits specified files.
     # If files aren't tracked, adds them
     # If files don't changed, ignore them
-    def commit_files_force(message, files)
+    def commit_files_force(message, files, opts)
       st = status()
       untracked = st.untracked.keys
       modified = untracked + st.modified_names
       mf = files.find_all { |f| modified.include?(f) }
       uf = files.find_all { |f| untracked.include?(f) }
       @git.add(*uf)  if not uf.empty?
-      commit_files(message, mf)
+      commit_files(message, mf, opts)
     end
 
     # Adds files to the index
