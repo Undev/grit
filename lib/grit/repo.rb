@@ -254,8 +254,8 @@ module Grit
     # Commits current index
     #
     # Returns true/false if commit worked
-    def commit_index(message)
-      @git.commit({:m => message})
+    def commit_index(message, opts={})
+      @git.commit({:m => message}.merge(opts))
     end
 
     # Commits all tracked and modified files
