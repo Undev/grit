@@ -246,6 +246,11 @@ module Grit
       Head.current(self)
     end
 
+    def remove_branch(branch)
+      branch = branch.name  if branch.is_a?(Grit::Head)
+      @git.branch({'d' => true}, branch)
+    end
+
 
     # Commits current index
     #
