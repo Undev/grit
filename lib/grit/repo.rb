@@ -239,10 +239,6 @@ module Grit
       get_head(head_name)
     end
 
-    def branch_name(branch)
-      branch.is_a?(Grit::Head) ? branch.name : branch
-    end
-
     # Object reprsenting the current repo head.
     #
     # Returns Grit::Head (baked)
@@ -251,7 +247,7 @@ module Grit
     end
 
     def remove_branch(branch)
-      @git.branch({'d' => true}, branch_name(branch))
+      @git.branch({'d' => true}, branch)
     end
 
 
@@ -698,7 +694,7 @@ module Grit
     end
 
     def checkout_paths(committish, paths, opts={})
-      @git.checkout(opts, branch_name(committish), *paths)
+      @git.checkout(opts, committish), *paths)
     end
 
     # Performs fetch.

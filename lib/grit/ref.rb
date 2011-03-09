@@ -73,6 +73,10 @@ module Grit
       self.new(branch_name, commit)
     end
 
+    def to_s
+      @name
+    end
+
   end # Head
 
   class Remote < Ref; end
