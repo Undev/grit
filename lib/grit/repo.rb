@@ -246,8 +246,9 @@ module Grit
       Head.current(self)
     end
 
-    def remove_branch(branch)
-      @git.branch({'d' => true}, branch)
+    def remove_branch(branch, force=false)
+      opts = force ? {'D' => true} : {'d' => true}
+      @git.branch(opts, branch)
     end
 
 
