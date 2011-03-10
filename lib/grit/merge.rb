@@ -56,8 +56,8 @@ module Grit
     end
 
     def initialize(base, path, str, ours='ours', theirs='theirs')
-      @status_ours = ours
-      @status_theirs = theirs
+      @status_ours = ours.to_s
+      @status_theirs = theirs.to_s
       super(str)
       @base = base
       @path = path
