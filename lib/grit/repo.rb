@@ -808,14 +808,14 @@ module Grit
     # Commits changes, related to submodules.
     # If names given, commits only them, otherwise, commits all submodules.
     # If .gitmodules modified in some ways (changed, or added), commits it, too
-    def submodule_commit_changes(message, *names)
+    def submodule_commit_changes(message, names=[], opts={})
       if names.empty?
         names = @submodules.keys
       elsif
         names = @submodules.keys.find_all { |n| names.include?(n) }
       end
       names << '.gitmodules'  if status.modified_names.include?('.gitmodules')
-      commit_files(message, names)
+      commit_files(message, names, opts)
       # cannot use commit_files_force here, because submodule path
       # couldn't be untracked
     end
