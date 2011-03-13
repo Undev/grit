@@ -704,8 +704,8 @@ module Grit
 
     # Performs fetch.
     # By default fetching changes from `origin master`.
-    def fetch(repo='origin', ref='master', opts={}, *args)
-      @git.fetch(opts, repo, ref, *args)
+    def fetch(repo='origin', ref='master', opts={})
+      @git.fetch(opts, repo, ref)
       # TODO: universal return-value
     end
 
@@ -737,10 +737,9 @@ module Grit
     end
 
     # Perform fetch and then merge
-    def pull(repo='origin', ref='master', fopts={}, mopts={}, args=[[], []])
-      (fargs, margs) = args
-      fst = fetch(repo, ref, fopts, *fargs)
-      mst = merge(repo, mopts, *margs)
+    def pull(repo='origin', ref='master', fopts={}, mopts={})
+      fst = fetch(repo, ref, fopts)
+      mst = merge('FETCH_HEAD', mopts)
 
       fst + mst
     end
