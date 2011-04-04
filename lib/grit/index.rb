@@ -181,8 +181,8 @@ module Grit
             str = "%s %s\0%s" % ['40000', k, sha]
             tree_contents[k + '/'] = str
           when false
-            deleted_file = tree_contents.delete(k)
-            tree_contents.delete(k + '/') unless deleted_file
+            tree_contents.delete(k)
+            tree_contents.delete(k + '/')
         end
       end
 
