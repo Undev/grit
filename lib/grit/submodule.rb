@@ -62,12 +62,12 @@ module Grit
     end
 
     # Entry point for other commands
-    def self.submodule(parent, options={}, *args)
-      parent.git.submodule(options, *args)
+    def self.submodule(parent, cmd, options={}, *args)
+      parent.git.submodule(options.merge(:subcommand => cmd), *args)
     end
 
     def self.add(parent, url, path='')
-      submodule(parent, {}, 'add', url, path)
+      submodule(parent, 'add', {}, url, path)
       if path == ''
         (path, _) = self.paths(parent).find do |p|
           !parent.submodules.has_key?(p) && url.include?(p)
@@ -79,7 +79,7 @@ module Grit
     end
 
     def self.paths(parent)
-      lines = submodule(parent, {}, "status")
+      lines = submodule(parent, 'status', {})
       lines.split("\n").map do |line|
         (_, path, _) = line.split(" ")
         path
@@ -98,8 +98,8 @@ module Grit
       @parent = parent
     end
 
-    def submodule(options, *args)
-      self.class.submodule(@parent, options, *args, @path)
+    def submodule(cmd, options, *args)
+      self.class.submodule(@parent, cmd, options, *args, @path)
     end
 
     # Returns parsed result of git submodule status @path command
@@ -119,7 +119,7 @@ module Grit
     end
 
     def init
-      submodule({}, "init")
+      submodule('init', {})
     end
 
     # Runs git submodule update @path
@@ -127,7 +127,7 @@ module Grit
     # :init -- perform initialization too
     def update(opts={})
       init = opts[:init]
-      submodule({:init => init}, "update")
+      submodule('update', {:init => init})
     end
 
     def commit_sha
@@ -167,7 +167,7 @@ module Grit
     private
 
     def raw_status
-      submodule({}, "status")
+      submodule('status', {})
     end
 
   end # Submodule
