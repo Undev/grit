@@ -41,23 +41,35 @@ module Grit
     #   exists but is not a Git repository.
     # Raises Grit::Errors::NoSuchPathError if the path does not exist.
     def initialize(path, options = {})
-      epath = File.expand_path(path)
+      git_path = File.expand_path(path)
 
-      if File.exist?(File.join(epath, '.git'))
-        @working_dir = epath
-        @path = File.join(epath, '.git')
-        @bare = false
-      elsif File.exist?(epath) && (epath =~ /\.git$/ || options[:is_bare])
-        @path = epath
-        @bare = true
-      elsif File.exist?(epath)
-        raise Grit::Errors::InvalidGitRepositoryError.new(epath)
-      else
-        raise Grit::Errors::NoSuchPathError.new(epath)
+      raise Grit::Errors::NoSuchPathError.new(git_path) unless File.exist? git_path
+
+      @bare = options[:is_bare]
+
+      unless @bare
+        real_git_path = File.join(git_path, '.git')
+        if File.exist? real_git_path
+          git_path = real_git_path
+        else
+          @bare = true
+        end
       end
+
+      if Dir.new(git_path).count > 2
+        unless File.exist?(File.join(git_path, 'HEAD')) &&
+           File.stat(File.join(git_path, 'objects')).directory? &&
+           File.stat(File.join(git_path, 'refs')).directory?
+          raise Grit::Errors::InvalidGitRepositoryError.new(git_path)
+        end
+      end
+
+      @path = git_path
+      @working_dir = File.dirname(git_path) if !@bare
 
       @git = Git.new(@path)
       @submodules = Grit::Submodule.create_submodules(self)
+
     end
 
     # Public: Initialize a git repository (create it on the filesystem). By
