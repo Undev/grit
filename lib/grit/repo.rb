@@ -790,18 +790,27 @@ module Grit
       subm
     end
 
-    def submodule_update(opts={})
-      recursive = opts[:recursive]
+    def submodules_update(opts={})
       @submodules.values.each do |subm|
         subm.update(opts)
-        subm.repo.submodule_update(opts)  if recursive
       end
     end
 
-    def submodule_init(recursive=false)
+    def submodules_update_recursive(opts={})
+      submodules_traverse_depth_left do |bopts|
+        bopts[:submodule].update(opts)
+      end
+    end
+
+    def submodules_init
       @submodules.values.each do |subm|
         subm.init()
-        subm.repo.submodule_init(recursive)  if recursive
+      end
+    end
+
+    def submodules_init_recursive
+      submodules_traverse_depth_left do |opts|
+        opts[:submodule].init()
       end
     end
 
@@ -809,29 +818,76 @@ module Grit
     # Returns Array of Hashes
     # {<path:String> => <extended result of Submodule.status>}, where
     # submodule status extended with :subm => Submodule instance
-    def submodule_status(start_path=".")
-      @submodules.values.reduce([]) do |res, subm|
-        path = File.join(start_path, subm.path)
-        status = subm.status.merge({:subm => subm})
-        res + [{path => status}] + subm.repo.submodule_status(path)
+    def submodules_status
+      res = {}
+      submodules_traverse_depth_left do |opts|
+        submodule = opts[:submodule]
+        next  if submodule.nil?
+        res[opts[:path_name]] = submodule.status.merge(:submodule => submodule)
       end
+
+      res
     end
 
-    # Commits changes, related to submodules.
+    # Commits changed submodules.
     # If names given, commits only them, otherwise, commits all submodules.
     # If .gitmodules modified in some ways (changed, or added), commits it, too
-    def submodule_commit_changes(message, names=[], opts={})
-      if names.empty?
-        names = @submodules.keys
-      elsif
-        names = @submodules.keys.find_all { |n| names.include?(n) }
+    def submodules_commit_changed(message, names=[], opts={})
+      submodules_traverse_depth_right do |bopts|
+        repo = bopts[:repo]
+        pname = bopts[:path_name]
+        if names.empty?
+          to_commit = repo.submodules.keys
+        else
+          to_commit = repo.submodules.keys.find_all { |n|
+            name = pname ? File.join(pname, n) : n
+            names.include?(name)
+          }
+        end
+        if repo.status.modified_names.include?('.gitmodules')
+          to_commit << '.gitmodules'
+        end
+        next  if to_commit.empty?
+        repo.commit_files(message, to_commit, opts)
       end
-      names << '.gitmodules'  if status.modified_names.include?('.gitmodules')
-      commit_files(message, names, opts)
       # cannot use commit_files_force here, because submodule path
       # couldn't be untracked
     end
 
+    # traverse submodules tree depth-first and executes block
+    # starting from deepest submodule
+    def submodules_traverse_depth_right(opts={}, &blk)
+      # TODO: rename to traverse_submodules
+      raise LocalJumpError.new('no block given')  if blk.nil?
+      path_name = opts[:path_name]
+      submodules.each_pair do |sub_name, submodule|
+        pname = path_name ? File.join(path_name, sub_name) : sub_name
+        submodule.repo.submodules_traverse_depth_right(:submodule => submodule,
+                                                       :name => sub_name,
+                                                       :path_name => pname,
+                                                       &blk)
+      end
+      blk.call(opts.merge({:repo => self}))
+
+      nil
+    end
+
+    # traverse submodules tree depth-first and execustes block
+    # on every submodule at once
+    def submodules_traverse_depth_left(opts={}, &blk)
+      raise LocalJumpError.new('no block given')  if blk.nil?
+      path_name = opts[:path_name]
+      blk.call(opts.merge({:repo => self}))
+      submodules.each_pair do |sub_name, submodule|
+        pname = path_name ? File.join(path_name, sub_name) : sub_name
+        submodule.repo.submodules_traverse_depth_left(:submodule => submodule,
+                                                      :name => sub_name,
+                                                      :path_name => pname,
+                                                      &blk)
+      end
+
+      nil
+    end
 
     def make_executable(filename)
       oldmode = (File.stat filename).mode
