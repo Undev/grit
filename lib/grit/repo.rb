@@ -832,9 +832,6 @@ module Grit
       # couldn't be untracked
     end
 
-    def submodules_have_file?(file)
-      @submodules.values.any? { |subm| subm.has_file?(file) }
-    end
 
     def make_executable(filename)
       oldmode = (File.stat filename).mode

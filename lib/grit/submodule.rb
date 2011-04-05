@@ -155,10 +155,6 @@ module Grit
       raw_status().split("\n")[0].split(" ")[2][1..-1]
     end
 
-    def has_file?(file)
-      file.start_with?(@path)
-    end
-
     # Pretty object inspection
     def inspect
       %Q{#<Grit::Submodule "#{@path}" -- "#{@url}">}
