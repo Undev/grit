@@ -822,7 +822,6 @@ module Grit
       res = {}
       submodules_traverse_depth_left do |opts|
         submodule = opts[:submodule]
-        next  if submodule.nil?
         res[opts[:path_name]] = submodule.status.merge(:submodule => submodule)
       end
 
@@ -833,7 +832,7 @@ module Grit
     # If names given, commits only them, otherwise, commits all submodules.
     # If .gitmodules modified in some ways (changed, or added), commits it, too
     def submodules_commit_changed(message, names=[], opts={})
-      submodules_traverse_depth_right do |bopts|
+      submodules_traverse_depth_right(:apply_to_parent => true) do |bopts|
         repo = bopts[:repo]
         pname = bopts[:path_name]
         if names.empty?
@@ -857,8 +856,8 @@ module Grit
     # traverse submodules tree depth-first and executes block
     # starting from deepest submodule
     def submodules_traverse_depth_right(opts={}, &blk)
-      # TODO: rename to traverse_submodules
       raise LocalJumpError.new('no block given')  if blk.nil?
+      apply_to_parent = opts.delete(:apply_to_parent)
       path_name = opts[:path_name]
       submodules.each_pair do |sub_name, submodule|
         pname = path_name ? File.join(path_name, sub_name) : sub_name
@@ -867,7 +866,8 @@ module Grit
                                                        :path_name => pname,
                                                        &blk)
       end
-      blk.call(opts.merge({:repo => self}))
+      # TODO: check for submodule, not for path_name?
+      blk.call(opts.merge({:repo => self}))  if path_name || apply_to_parent
 
       nil
     end
