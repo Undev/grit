@@ -877,7 +877,8 @@ module Grit
     def submodules_traverse_depth_left(opts={}, &blk)
       raise LocalJumpError.new('no block given')  if blk.nil?
       path_name = opts[:path_name]
-      blk.call(opts.merge({:repo => self}))
+      apply_to_parent = opts.delete(:apply_to_parent)
+      blk.call(opts.merge({:repo => self})) if path_name || apply_to_parent
       submodules.each_pair do |sub_name, submodule|
         pname = path_name ? File.join(path_name, sub_name) : sub_name
         submodule.repo.submodules_traverse_depth_left(:submodule => submodule,
@@ -925,6 +926,9 @@ module Grit
     # Pretty object inspection
     def inspect
       %Q{#<Grit::Repo "#{@path}">}
+    end
+    def to_s
+      inspect
     end
   end # Repo
 
