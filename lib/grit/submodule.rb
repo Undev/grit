@@ -92,10 +92,11 @@ module Grit
     # parent - Grit::Repo instance of parent repo
     def initialize(path, url, parent)
       full_path = File.join(parent.working_dir, path)
-      @repo = Repo.new(full_path)
       @path = path
       @url = url
       @parent = parent
+      update(:init => true)
+      @repo = Repo.new(full_path)
     end
 
     def submodule(cmd, options, *args)
