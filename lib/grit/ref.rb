@@ -13,8 +13,7 @@ module Grit
         refs = repo.git.refs(options, prefix)
         refs.split("\n").map do |ref|
           name, id = *ref.split(' ')
-          commit = Commit.create(repo, :id => id)
-          self.new(name, commit)
+          self.new(name, id, repo)
         end
       end
 
@@ -24,26 +23,27 @@ module Grit
           "refs/#{name.to_s.gsub(/^.*::/, '').downcase}s"
         end
 
-    end
+      end
 
-    attr_reader :name
-    attr_reader :commit
+      attr_reader :name
+      attr_reader :commit
 
-    # Instantiate a new Head
-    #   +name+ is the name of the head
-    #   +commit+ is the Commit that the head points to
-    #
-    # Returns Grit::Head (baked)
-    def initialize(name, commit)
-      @name = name
-      @commit = commit
-    end
+      # Instantiate a new Head
+      #   +name+ is the name of the head
+      #   +commit+ is the Commit that the head points to
+      #
+      # Returns Grit::Head (baked)
+      def initialize(name, commit, parent)
+        @name = name
+        @commit = Commit.create(repo, :id => commit)
+        @parent = parent
+      end
 
-    # Pretty object inspection
-    def inspect
-      %Q{#<#{self.class.name} "#{@name}">}
-    end
-  end # Ref
+      # Pretty object inspection
+      def inspect
+        %Q{#<#{self.class.name} "#{@name}">}
+      end
+    end # Ref
 
   # A Head is a named reference to a Commit. Every Head instance contains a name
   # and a Commit object.
@@ -71,6 +71,15 @@ module Grit
       commit = Commit.create(repo, :id => id)
       (_, _, branch_name) = head_ref.split('/')
       self.new(branch_name, commit)
+    end
+
+    def self.create(repo, name, commit='master', opts={})
+      commit_id = repo.git.branch(name, commit, opts)
+      self.new(name, commit_id, repo)
+    end
+
+    def change_commit(new_commit_sha)
+      @parent.repo.branch({:force => true}, @name, new_commit_sha)
     end
 
     def to_s
