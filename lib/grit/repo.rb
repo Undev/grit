@@ -834,24 +834,26 @@ module Grit
     def submodules_commit_changed(message, names=[], opts={})
       submodules_traverse_depth_right(:apply_to_parent => true) do |bopts|
         repo = bopts[:repo]
-        pname = bopts[:path_name]
+        path_name = bopts[:path_name]
         if names.empty?
           to_commit = repo.submodules.keys
         else
           to_commit = repo.submodules.keys.find_all { |n|
-            name = pname ? File.join(pname, n) : n
+            name = path_name ? File.join(path_name, n) : n
             names.include?(name)
           }
         end
         if repo.status.modified_names.include?('.gitmodules')
           to_commit << '.gitmodules'
         end
-        next  if to_commit.empty?
+        next  if to_commit.empty? || repo.status.modified_names.empty?
         repo.commit_files(message, to_commit, opts)
       end
       # cannot use commit_files_force here, because submodule path
       # couldn't be untracked
     end
+
+    SKIP_BRANCH = Object.new
 
     # traverse submodules tree depth-first and executes block
     # starting from deepest submodule
@@ -878,7 +880,8 @@ module Grit
       raise LocalJumpError.new('no block given')  if blk.nil?
       path_name = opts[:path_name]
       apply_to_parent = opts.delete(:apply_to_parent)
-      blk.call(opts.merge({:repo => self})) if path_name || apply_to_parent
+      r = blk.call(opts.merge({:repo => self})) if path_name || apply_to_parent
+      return nil  if r.equal?(SKIP_BRANCH)
       submodules.each_pair do |sub_name, submodule|
         pname = path_name ? File.join(path_name, sub_name) : sub_name
         submodule.repo.submodules_traverse_depth_left(:submodule => submodule,
