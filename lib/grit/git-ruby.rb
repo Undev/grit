@@ -111,22 +111,41 @@ module Grit
       return method_missing('rev-parse', options, string).chomp
     end
 
-    def branch(opts={}, name, commit='master', *args)
-      force = opts.delete(:force)
-      if !opts.empty?
-        return method_missing('branch', opts.merge(:force => force),
-                              name, commit, *args)
+    def branch(opts={}, *args)
+      (name, commit) = args[0], args[1]
+      commit = commit || 'master'
+      rest = args.slice(2, args.count) || []
+      force_delete = opts.delete('D')
+      force = opts.delete('force')
+      if !opts.empty? || !rest.empty? || name.nil?
+        return method_missing('branch', opts.merge('force' => force,
+                                                   'D' => force_delete), *args)
       end
-      commit_id = rev_parse(commit)
+      return remove_branch(name, opts)  if force_delete
+
+      commit_id = rev_parse({}, commit)
       path = File.join('refs', 'heads', name)
       Dir.chdir(@git_dir) do
         if File.file?(path) && !force
-          raise Grit::Errors::BranchAlreadyExists.new
+          raise Grit::Errors::BranchAlreadyExists.new(name)
         end
-        File.open(path) { |f| f.write(commit_id) }
+        File.open(path, 'w') { |f| f.write(commit_id) }
       end
 
       commit_id
+    end
+
+    def remove_branch(name, opts={})
+      Dir.chdir(@git_dir) do
+        path = File.join('refs', 'heads', name)
+        File.unlink(path) if File.file?(path)
+        if File.file?('packed-refs')
+          keep = File.readlines('packed-refs').find_all { |line|
+            !(/^(\w{40}) #{path}$/.match(line))
+          }
+          File.open('packed-refs', 'w') { |f| f.write(keep.join('\n')) }
+        end
+      end
     end
 
     def refs(options, prefix)
