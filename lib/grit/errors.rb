@@ -78,5 +78,11 @@ module Grit
       end
     end
 
+    class BranchAlreadyExists < CommandFailed
+      def initialize(name)
+        super 'branch', 128, "fatal: A branch named '#{name}' already exists."
+      end
+    end
+
   end
 end

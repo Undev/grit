@@ -111,6 +111,24 @@ module Grit
       return method_missing('rev-parse', options, string).chomp
     end
 
+    def branch(opts={}, name, commit='master', *args)
+      force = opts.delete(:force)
+      if !opts.empty?
+        return method_missing('branch', opts.merge(:force => force),
+                              name, commit, *args)
+      end
+      commit_id = rev_parse(commit)
+      path = File.join('refs', 'heads', name)
+      Dir.chdir(@git_dir) do
+        if File.file?(path) && !force
+          raise Grit::Errors::BranchAlreadyExists.new
+        end
+        File.open(path) { |f| f.write(commit_id) }
+      end
+
+      commit_id
+    end
+
     def refs(options, prefix)
       refs = []
       already = {}
