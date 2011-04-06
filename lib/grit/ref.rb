@@ -35,7 +35,7 @@ module Grit
       # Returns Grit::Head (baked)
       def initialize(name, commit, parent)
         @name = name
-        @commit = Commit.create(repo, :id => commit)
+        @commit = Commit.create(parent, :id => commit)
         @parent = parent
       end
 
@@ -74,12 +74,15 @@ module Grit
     end
 
     def self.create(repo, name, commit='master', opts={})
-      commit_id = repo.git.branch(name, commit, opts)
+      commit_id = repo.git.branch(opts, name, commit)
       self.new(name, commit_id, repo)
     end
 
-    def change_commit(new_commit_sha)
-      @parent.repo.branch({:force => true}, @name, new_commit_sha)
+    def change_ref(new_ref)
+      new_commit_id = @parent.git.branch({'force' => true}, @name, new_ref)
+      @commit = Commit.create(@parent, :id => new_commit_id)
+
+      true
     end
 
     def to_s

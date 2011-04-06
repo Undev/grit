@@ -258,11 +258,14 @@ module Grit
       Head.current(self)
     end
 
-    def remove_branch(branch, force=false)
-      opts = force ? {'D' => true} : {'d' => true}
-      @git.branch(opts, branch)
+    def create_branch(name, commit='master', opts={})
+      Head.create(self, name, commit, opts)
     end
 
+    def remove_branch(branch, force=false)
+      opts = force ? {'D' => true} : {'d' => true}
+      @git.branch(opts, branch.to_s)
+    end
 
     # Commits current index
     #
