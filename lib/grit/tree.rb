@@ -84,6 +84,29 @@ module Grit
       contents.find_all { |v| v.kind_of? Blob }
     end
 
+    def walk_left(path_name=nil, &blk)
+      raise LocalJumpError.new('no block given')  if blk.nil?
+      trees = trees()
+      name = @name
+      path_name = path_name ? File.join(path_name, name) : name
+      r = blk.call(name, path_name, trees, blobs())
+      return nil  if r.equal?(Repo::SKIP_BRANCH)
+      trees.each { |t| t.walk_left(path_name, &blk) }
+
+      nil
+    end
+
+    def walk_right(path_name=nil, &blk)
+      raise LocalJumpError.new('no block given')  if blk.nil?
+      trees = tree.trees()
+      name = @name
+      path_name = path_name ? File.join(path_name, name) : name
+      trees.each { |t| t.walk_right(path_name, &blk) }
+      r = blk.call(name, path_name, trees, blobs())
+
+      nil
+    end
+
   end # Tree
 
 end # Grit

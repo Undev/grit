@@ -547,30 +547,6 @@ module Grit
       Tree.construct(self, treeish, paths)
     end
 
-    def walk_left(tree, path_name=nil, &blk)
-      raise LocalJumpError.new('no block given')  if blk.nil?
-      trees = tree.trees()
-      name = tree.name
-      path_name = path_name ? File.join(path_name, name) : name
-      r = blk.call(name, path_name, trees, tree.blobs)
-      return nil  if r.equal?(SKIP_BRANCH)
-      trees.each { |t| walk_left(t, path_name, &blk) }
-
-      nil
-    end
-
-    def walk_right(tree=nil, path_name=nil, &blk)
-      raise LocalJumpError.new('no block given')  if blk.nil?
-      tree = tree || tree()
-      trees = tree.trees()
-      name = tree.name
-      path_name = path_name ? File.join(path_name, name) : name
-      trees.each { |t| walk_left(t, path_name, &blk) }
-      r = blk.call(name, path_name, trees, wtree.blobs)
-
-      nil
-    end
-
     # The Blob object for the given id
     #   +id+ is the SHA1 id of the blob
     #
