@@ -112,14 +112,14 @@ module Grit
     end
 
     def branch(opts={}, *args)
+      or_opts = opts.dup
       (name, commit) = args[0], args[1]
       commit = commit || 'master'
       rest = args.slice(2, args.count) || []
       force_delete = opts.delete('D')
       force = opts.delete('force')
       if !opts.empty? || !rest.empty? || name.nil?
-        return method_missing('branch', opts.merge('force' => force,
-                                                   'D' => force_delete), *args)
+        return method_missing('branch', or_opts, *args)
       end
       return remove_branch(name, opts)  if force_delete
 
