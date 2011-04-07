@@ -246,6 +246,7 @@ module Grit
     def get_head(head_name)
       heads.find { |h| h.name == head_name }
     end
+    alias_method :branch, :get_head
 
     def is_head?(head_name)
       get_head(head_name)
@@ -256,10 +257,6 @@ module Grit
     # Returns Grit::Head (baked)
     def head
       Head.current(self)
-    end
-
-    def branch(name)
-      heads.find { |h| h.name == name }
     end
 
     def remote_branch(remote, name)
