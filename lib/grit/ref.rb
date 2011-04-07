@@ -74,7 +74,7 @@ module Grit
     end
 
     def change_ref(new_ref)
-      new_commit_id = @parent.git.branch({'force' => true}, @name, new_ref)
+      new_commit_id = @parent.git.branch({:force => true}, @name, new_ref)
       @commit = Commit.create(@parent, :id => new_commit_id)
 
       true

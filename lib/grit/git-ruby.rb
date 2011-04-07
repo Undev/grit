@@ -116,8 +116,8 @@ module Grit
       (name, commit) = args[0], args[1]
       commit = commit || 'master'
       rest = args.slice(2, args.count) || []
-      force_delete = opts.delete('D')
-      force = opts.delete('force')
+      force_delete = opts.delete(:D)
+      force = opts.delete(:force)
       if !opts.empty? || !rest.empty? || name.nil?
         return method_missing('branch', or_opts, *args)
       end

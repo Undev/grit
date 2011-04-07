@@ -263,7 +263,7 @@ module Grit
     end
 
     def remove_branch(branch, force=false)
-      opts = force ? {'D' => true} : {'d' => true}
+      opts = force ? {:D => true} : {:d => true}
       @git.branch(opts, branch.to_s)
     end
 
