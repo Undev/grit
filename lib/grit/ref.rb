@@ -66,6 +66,8 @@ module Grit
       self.new(branch_name, id, repo)
     end
 
+    # Create new branch, pointing to commit +commit+ and
+    # returns Grit::Head (baked)
     def self.create(repo, name, commit='master', opts={})
       commit_id = repo.git.branch(opts, name, commit)
       self.new(name, commit_id, repo)
@@ -84,7 +86,12 @@ module Grit
 
   end # Head
 
-  class Remote < Ref; end
+  class Remote < Ref
+    def fetch
+      rm_name, head_name = *@name.split('/')
+      @parent.git.fetch({}, rm_name, head_name, "#{head_name}:#{@name}")
+    end
+  end
 
   class Note < Ref; end
 end # Grit

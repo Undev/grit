@@ -369,12 +369,25 @@ module Grit
       Remote.find_all(self)
     end
 
+    # Array of remote names
     def remote_list
       @git.list_remotes
     end
 
-    def remote_add(name, url)
-      @git.remote({}, 'add', name, url)
+    # Returns hash where Grit::Remote[] grouped by parent remote name
+    def remote_hash
+      rst = {}
+      rst.default_proc = proc { |hash, key| hash[key] = [] }
+      remotes.each do |branch|
+        parent_name = branch.name.split('/').first
+        rst[parent_name] << branch
+      end
+
+      rst
+    end
+
+    def remote_add(name, url, opts={})
+      @git.remote(opts, 'add', name, url)
     end
 
     def remote_fetch(name)
