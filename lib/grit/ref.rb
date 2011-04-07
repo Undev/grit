@@ -1,49 +1,43 @@
 module Grit
 
   class Ref
-
-    class << self
-
-      # Find all Refs
-      #   +repo+ is the Repo
-      #   +options+ is a Hash of options
-      #
-      # Returns Grit::Ref[] (baked)
-      def find_all(repo, options = {})
-        refs = repo.git.refs(options, prefix)
-        refs.split("\n").map do |ref|
-          name, id = *ref.split(' ')
-          self.new(name, id, repo)
-        end
+    # Find all Refs
+    #   +repo+ is the Repo
+    #   +options+ is a Hash of options
+    #
+    # Returns Grit::Ref[] (baked)
+    def self.find_all(repo, options = {})
+      refs = repo.git.refs(options, prefix)
+      refs.split("\n").map do |ref|
+        name, id = *ref.split(' ')
+        self.new(name, id, repo)
       end
+    end
 
-      protected
+    attr_reader :name
+    attr_reader :commit
 
-        def prefix
-          "refs/#{name.to_s.gsub(/^.*::/, '').downcase}s"
-        end
+    # Instantiate a new Head
+    #   +name+ is the name of the head
+    #   +commit+ is the Commit that the head points to
+    #
+    # Returns Grit::Head (baked)
+    def initialize(name, commit, parent)
+      @name = name
+      @commit = Commit.create(parent, :id => commit)
+      @parent = parent
+    end
 
-      end
+    # Pretty object inspection
+    def inspect
+      %Q{#<#{self.class.name} "#{@name}">}
+    end
 
-      attr_reader :name
-      attr_reader :commit
-
-      # Instantiate a new Head
-      #   +name+ is the name of the head
-      #   +commit+ is the Commit that the head points to
-      #
-      # Returns Grit::Head (baked)
-      def initialize(name, commit, parent)
-        @name = name
-        @commit = Commit.create(parent, :id => commit)
-        @parent = parent
-      end
-
-      # Pretty object inspection
-      def inspect
-        %Q{#<#{self.class.name} "#{@name}">}
-      end
-    end # Ref
+    protected
+    def self.prefix
+      "refs/#{name.to_s.gsub(/^.*::/, '').downcase}s"
+    end
+  end # Ref
 
   # A Head is a named reference to a Commit. Every Head instance contains a name
   # and a Commit object.
@@ -68,9 +62,8 @@ module Grit
         return nil
       end
       id = repo.git.rev_parse(options, head_ref)
-      commit = Commit.create(repo, :id => id)
       (_, _, branch_name) = head_ref.split('/')
-      self.new(branch_name, commit)
+      self.new(branch_name, id, repo)
     end
 
     def self.create(repo, name, commit='master', opts={})
@@ -94,5 +87,4 @@ module Grit
   class Remote < Ref; end
 
   class Note < Ref; end
-
 end # Grit

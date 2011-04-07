@@ -13,8 +13,7 @@ module Grit
         name, id = *ref.split(' ')
         sha = repo.git.commit_from_sha(id)
         raise "Unknown object type." if sha == ''
-        commit = Commit.create(repo, :id => sha)
-        new(name, commit)
+        new(name, sha, repo)
       end
     end
 
@@ -25,10 +24,10 @@ module Grit
     #          type commit
     #          tag v0.7.0
     #          tagger USER <EMAIL> DATE
-    #          
+    #
     #          v0.7.0
     #
-    # Returns parsed Hash.  Example: 
+    # Returns parsed Hash.  Example:
     #   {:message => "...", :tagger => "bob", :tag_date => ...}
     def self.parse_tag_data(data)
       return unless data =~ /^object/
