@@ -97,5 +97,10 @@ module Grit
     end
   end
 
-  class Note < Ref; end
+  class Note < Ref
+    protected
+    def self.prefix
+      "refs/#{name.to_s.gsub(/^.*::/, '').downcase}s/commits"
+    end
+  end
 end # Grit
