@@ -377,10 +377,10 @@ module Grit
     # Returns hash where Grit::Remote[] grouped by parent remote name
     def remote_hash
       rst = {}
-      rst.default_proc = proc { |hash, key| hash[key] = [] }
+      rst.default_proc = proc { |hash, key| hash[key] = {} }
       remotes.each do |branch|
-        parent_name = branch.name.split('/').first
-        rst[parent_name] << branch
+        parent_name, branch_name =  branch.name.split('/')
+        rst[parent_name][branch_name] = branch
       end
 
       rst
@@ -388,6 +388,11 @@ module Grit
 
     def remote_add(name, url, opts={})
       @git.remote(opts, 'add', name, url)
+      remote_hash[name]
+    end
+
+    def remote_rm(name, opts={})
+      @git.remote(opts, 'rm', name)
     end
 
     def remote_fetch(name)
