@@ -84,6 +84,10 @@ module Grit
       true
     end
 
+    def tree(*paths)
+      @parent.tree(self, *paths)
+    end
+
   end # Head
 
   class Remote < Ref
