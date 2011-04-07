@@ -33,6 +33,10 @@ module Grit
       %Q{#<#{self.class.name} "#{@name}">}
     end
 
+    def to_s
+      @name
+    end
+
     protected
     def self.prefix
       "refs/#{name.to_s.gsub(/^.*::/, '').downcase}s"
@@ -78,10 +82,6 @@ module Grit
       @commit = Commit.create(@parent, :id => new_commit_id)
 
       true
-    end
-
-    def to_s
-      @name
     end
 
   end # Head
