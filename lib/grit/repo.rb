@@ -258,6 +258,14 @@ module Grit
       Head.current(self)
     end
 
+    def branch(name)
+      heads.find { |h| h.name == name }
+    end
+
+    def remote_branch(remote, name)
+      remote_hash[remote][name]
+    end
+
     def create_branch(name, commit='master', opts={})
       Head.create(self, name, commit, opts)
     end
