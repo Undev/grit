@@ -63,7 +63,7 @@ module Grit
 
     # Entry point for other commands
     def self.submodule(parent, cmd, options={}, *args)
-      parent.git.submodule(options.merge(:subcommand => cmd), *args)
+      parent.git.submodule(cmd, opts, *args)
     end
 
     def self.add(parent, url, path='')

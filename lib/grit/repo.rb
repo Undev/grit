@@ -387,12 +387,12 @@ module Grit
     end
 
     def remote_add(name, url, opts={})
-      @git.remote(opts, 'add', name, url)
+      @git.remote('add', opts, name, url)
       remote_hash[name]
     end
 
     def remote_rm(name, opts={})
-      @git.remote(opts, 'rm', name)
+      @git.remote('rm', opts, name)
     end
 
     def remote_fetch(name)

@@ -206,6 +206,18 @@ module Grit
       native(:write_tree, :env => options[:env]).to_s.chomp!
     end
 
+    def subcommand(main, cmd, opts, *args)
+      native(main.to_sym, opts.merge(:subcommand => cmd), *args)
+    end
+
+    def remote(cmd, opts={}, *args)
+      subcommand(:remote, cmd, opts, *args)
+    end
+
+    def submodule(cmd, opts={}, *args)
+      subcommand(:submodule, cmd, opts, *args)
+    end
+
     # Execute a git command, bypassing any library implementation.
     #
     # cmd - The name of the git command as a Symbol. Underscores are
