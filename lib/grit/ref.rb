@@ -37,6 +37,10 @@ module Grit
       @name
     end
 
+    def tree(*paths)
+      @parent.tree(self, *paths)
+    end
+
     protected
     def self.prefix
       "refs/#{name.to_s.gsub(/^.*::/, '').downcase}s"
@@ -82,10 +86,6 @@ module Grit
       @commit = Commit.create(@parent, :id => new_commit_id)
 
       true
-    end
-
-    def tree(*paths)
-      @parent.tree(self, *paths)
     end
 
   end # Head
