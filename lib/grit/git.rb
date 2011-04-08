@@ -210,6 +210,16 @@ module Grit
       native(:write_tree, :env => options[:env]).to_s.chomp!
     end
 
+    def apply_patch_to_worktree(patch)
+      native(:apply, {:input => patch})
+    rescue Grit::Errors::CommandFailed => err
+      if err.exitstatus == 1
+        nil
+      else
+        raise err
+      end
+    end
+
     def subcommand(main, cmd, opts, *args)
       native(main.to_sym, opts.merge(:subcommand => cmd), *args)
     end
