@@ -251,6 +251,7 @@ module Grit
     def is_head?(head_name)
       get_head(head_name)
     end
+    alias_method :has_branch?, :is_head?
 
     # Object reprsenting the current repo head.
     #
