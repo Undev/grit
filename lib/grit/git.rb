@@ -188,7 +188,7 @@ module Grit
       git_index = create_tempfile('index', true)
       native(:diff, {
         :env => {'GIT_INDEX_FILE' => git_index}},
-        from_sha, applies_sha)
+        from_sha.to_s, applies_sha.to_s)
     end
 
     # Applies the given patch against the given SHA of the current repo.
