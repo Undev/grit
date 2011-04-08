@@ -181,10 +181,14 @@ module Grit
     #
     # Returns the String patch from `git diff`.
     def get_patch(applies_sha)
+      get_patch_for("#{applies_sha}^", applies_sha)
+    end
+
+    def get_patch_for(from_sha, applies_sha)
       git_index = create_tempfile('index', true)
       native(:diff, {
         :env => {'GIT_INDEX_FILE' => git_index}},
-        "#{applies_sha}^", applies_sha)
+        from_sha, applies_sha)
     end
 
     # Applies the given patch against the given SHA of the current repo.
