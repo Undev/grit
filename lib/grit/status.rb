@@ -111,8 +111,7 @@ module Grit
         end
 
         # find modified in tree
-        diff_files({:ignore_submodules => 'untracked',
-                     :diff_filter => 'M'}).each do |path, data|
+        diff_files({:diff_filter => 'M'}).each do |path, data|
           @files[path].merge!(data)
         end
 
