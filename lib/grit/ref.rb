@@ -41,6 +41,10 @@ module Grit
       @parent.tree(self, *paths)
     end
 
+    def log(path=nil, options={})
+      @parent.log(self, path, options)
+    end
+
     protected
     def self.prefix
       "refs/#{name.to_s.gsub(/^.*::/, '').downcase}s"
