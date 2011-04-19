@@ -81,7 +81,7 @@ module Grit
     # Create new branch, pointing to commit +commit+ and
     # returns Grit::Head (baked)
     def self.create(repo, name, commit='master', opts={})
-      commit_id = repo.git.branch(opts, name, commit)
+      commit_id = repo.git.branch(opts, name, commit.to_s)
       self.new(name, commit_id, repo)
     end
 
