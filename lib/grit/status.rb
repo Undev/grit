@@ -125,6 +125,11 @@ module Grit
           @files[path].merge!(data)
         end
 
+        diff_index('HEAD', {:diff_filter => 'D'}).each do |path, data|
+          @files[path] = data
+          @files[path][:path] = path
+        end
+
         @files.each do |k, file_hash|
           @files[k] = StatusFile.new(@base, file_hash)
         end
@@ -172,7 +177,12 @@ module Grit
           # as first, additional column
           (info, file) = line.split("\t")
           (mode, sha, stage) = info.split
-          hsh[file] = {:path => file, :mode_index => mode, :sha_index => sha, :stage => stage}
+          hsh[file] = {
+            :path => file,
+            :mode_index => mode,
+            :sha_index => sha,
+            :stage => stage
+          }
         end
         hsh
       end

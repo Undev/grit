@@ -26,8 +26,9 @@ class TestIndexStatus < Test::Unit::TestCase
   end
 
   def test_status
+    Git.any_instance.expects(:diff_index).with({:diff_filter => 'D'}, 'HEAD').returns(fixture('diff_index'))
     Git.any_instance.expects(:diff_index).with({:diff_filter => 'A'}, 'HEAD').returns(fixture('diff_index'))
-    Git.any_instance.expects(:diff_files).with({:ignore_submodules => 'untracked', :diff_filter => 'M'}).returns(fixture('diff_files'))
+    Git.any_instance.expects(:diff_files).with({:diff_filter => 'M'}).returns(fixture('diff_files'))
     Git.any_instance.expects(:diff_files).with({:diff_filter => 'U'}).returns(fixture('diff_files_unmerged'))
     Git.any_instance.expects(:ls_files).with({:exclude_standard => true, :others => true}).returns('')
     Git.any_instance.expects(:ls_files).with({:stage => true}).returns(fixture('ls_files'))
