@@ -295,18 +295,24 @@ module Grit
     # Commits specified files.
     # If files aren't tracked, adds them.
     # If files don't changed, ignore them.
-    # Expand all paths to check inclusion.
+    # files should be present as relative paths
     def commit_files_force(message, files, opts={})
       st = status()
-      untracked = st.untracked.keys.map { |f| File.join(@working_dir, f) }
-      modified = st.modified_names.map { |f| File.join(@working_dir, f) }
-      removed = st.deleted.keys.map { |f| File.join(@working_dir, f) }
-      mf = files.find_all { |f| modified.include?(f) }
-      uf = files.find_all { |f| untracked.include?(f) }
-      rf = files.find_all { |f| removed.include?(f) }
+      pr = proc { |f| File.join(@working_dir, f) }
+      untracked = st.untracked.keys.map &pr
+      modified = st.modified_names &pr
+      removed = st.deleted.keys &pr
+      mf = files & modified
+      uf = files & untracked
+      rf = files & removed
 
       add(*uf)  if not uf.empty?
-      commit_files(message, mf + uf + rf, opts)
+      all = mf + uf + rf
+      if all.empty?
+        nil
+      else
+        commit_files(message, all, opts)
+      end
     end
 
     # Adds files to the index
