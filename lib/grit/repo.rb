@@ -298,16 +298,17 @@ module Grit
     # files should be present as relative paths
     def commit_files_force(message, files, opts={})
       st = status()
-      pr = proc { |f| File.join(@working_dir, f) }
-      untracked = st.untracked.keys.map &pr
-      modified = st.modified_names &pr
-      removed = st.deleted.keys &pr
+      fpath = proc { |f| File.join(@working_dir, f) }
+      untracked = st.untracked.keys.map &fpath
+      modified = st.modified_names.map &fpath
+      removed = st.deleted.keys.map &fpath
       mf = files & modified
       uf = files & untracked
       rf = files & removed
 
       add(*uf)  if not uf.empty?
       all = mf + uf + rf
+
       if all.empty?
         nil
       else
