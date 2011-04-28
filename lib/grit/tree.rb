@@ -109,7 +109,9 @@ module Grit
 
     # Commits tree and returns Grit::Commit object with returned id
     def commit_tree(parent = nil)
-      id = @repo.git.native(:commit_tree, {:p => parent}, @id).chomp
+      id = @repo.git.native(:commit_tree,
+                            {:p => parent, :args_before_options => true},
+                            @id).chomp
       Commit.create(@repo, :id => id)
     end
 

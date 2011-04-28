@@ -281,6 +281,7 @@ module Grit
       env = options.delete(:env) || {}
       process_info = options.delete(:process_info)
       subcommand = options.delete(:subcommand)
+      args_before_options = options.delete(:args_before_options)
 
       # fall back to using a shell when the last argument looks like it wants to
       # start a pipeline for compatibility with previous versions of grit.
@@ -303,8 +304,15 @@ module Grit
       argv << "--no-pager"
       argv << cmd.to_s.tr('_', '-')
       argv << subcommand  if subcommand
-      argv.concat(options_to_argv(options))
-      argv.concat(args)
+      if args_before_options
+        argv.concat(args)
+        argv.concat(options_to_argv(options))
+      else
+        argv.concat(options_to_argv(options))
+        argv.concat(args)
+      end
+
+
 
       # run it and deal with fallout
       Grit.log(argv.join(' ')) if Grit.debug
