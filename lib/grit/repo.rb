@@ -301,13 +301,11 @@ module Grit
       fpath = proc { |f| File.join(@working_dir, f) }
       untracked = st.untracked.keys.map &fpath
       modified = st.modified_names.map &fpath
-      removed = st.deleted.keys.map &fpath
       mf = files & modified
       uf = files & untracked
-      rf = files & removed
 
       add(*uf)  if not uf.empty?
-      all = mf + uf + rf
+      all = mf + uf
 
       if all.empty?
         nil

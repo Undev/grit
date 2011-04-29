@@ -36,7 +36,7 @@ module Grit
     end
 
     def modified_names
-      changed.keys + added.keys
+      changed.keys + added.keys + deleted.keys
     end
 
     def pretty
