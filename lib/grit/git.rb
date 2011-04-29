@@ -212,6 +212,8 @@ module Grit
 
     def apply_patch_to_worktree(patch)
       native(:apply, {:input => patch})
+
+      true
     rescue Grit::Errors::CommandFailed => err
       if err.exitstatus == 1
         nil
