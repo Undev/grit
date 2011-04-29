@@ -240,7 +240,7 @@ module Grit
     end
 
     def to_patch
-      @repo.git.format_patch({'1' => true, :stdout => true}, to_s)
+      @repo.git.get_patch(sha)
     end
 
     def notes
