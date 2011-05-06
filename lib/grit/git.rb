@@ -364,7 +364,7 @@ module Grit
             # ignore
           else
             argv << "-#{key}"
-            argv << shell_to_s(val)
+            argv << val.to_s
           end
         else
           if val == true
@@ -372,20 +372,11 @@ module Grit
           elsif !val # also handle nil
             # ignore
           else
-            argv << "--#{key.to_s.tr('_', '-')}=#{shell_to_s(val)}"
+            argv << "--#{key.to_s.tr('_', '-')}=#{val}"
           end
         end
       end
       argv
-    end
-
-    def shell_to_s(val)
-      val = val.to_s
-      if val.include?(' ') && val[0] != val[-1] && val[0] != '"'
-        "\"#{val}\""
-      else
-        val
-      end
     end
 
     # Simple wrapper around Timeout::timeout.
