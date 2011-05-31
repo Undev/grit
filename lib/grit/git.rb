@@ -41,7 +41,7 @@ module Grit
     self.git_timeout  = 10
     self.git_max_size = 5242880 # 5.megabytes
 
-    def self.with_timeout(timeout = 10.seconds)
+    def self.with_timeout(timeout = 10)
       old_timeout = Grit::Git.git_timeout
       Grit::Git.git_timeout = timeout
       yield
@@ -276,7 +276,7 @@ module Grit
     #   detail about the error.
     def native(cmd, options = {}, *args, &block)
       args     = args.first if args.size == 1 && args[0].is_a?(Array)
-      args.map!    { |a| a.to_s.strip }
+      args.map!    { |a| a.to_s }
       args.reject! { |a| a.empty? }
 
       # special option arguments
