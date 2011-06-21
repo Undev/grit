@@ -750,7 +750,7 @@ module Grit
             full_pack = File.join(path, 'pack')
             next if @loaded_packs.include?(full_pack)
             load_packs(full_pack)
-            load_alternate_packs(pth)
+            load_alternate_packs(path)
           end
         end
 
