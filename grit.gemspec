@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.extra_rdoc_files = %w[README.md LICENSE]
 
-  s.add_dependency('posix-spawn', "~> 0.3.0")
+  s.add_dependency('posix-spawn', "~> 0.3.6")
   s.add_dependency('mime-types', "~> 1.15")
   s.add_dependency('diff-lcs', "~> 1.1")
 
@@ -62,7 +62,6 @@ Gem::Specification.new do |s|
     lib/grit/git-ruby/repository.rb
     lib/grit/git.rb
     lib/grit/index.rb
-    lib/grit/jruby.rb
     lib/grit/lazy.rb
     lib/grit/merge.rb
     lib/grit/ref.rb

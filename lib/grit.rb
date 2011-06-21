@@ -49,11 +49,6 @@ require 'grit/submodule'
 require 'grit/blame'
 require 'grit/merge'
 
-# platform specific requires
-if defined?(RUBY_ENGINE) && RUBY_ENGINE =~ /jruby/
-  require 'grit/jruby'
-end
-
 module Grit
   VERSION = '2.4.2'
 

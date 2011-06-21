@@ -291,6 +291,7 @@ module Grit
 
   class Tag < GitObject
     attr_accessor :object, :tag, :tagger, :message
+    attr_writer :type
 
     def self.from_raw(rawobject, repository=nil)
 
