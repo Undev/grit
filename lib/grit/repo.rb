@@ -68,8 +68,12 @@ module Grit
       @working_dir = File.dirname(git_path) if !@bare
 
       @git = Git.new(@path)
-      @submodules = Grit::Submodule.create_submodules(self)
+      
+      create_submodules(@git.rev_parse({}, 'HEAD'))
+    end
 
+    def create_submodules(head = 'master')
+      @submodules = Grit::Submodule.create_submodules(self, head)
     end
 
     # Public: Initialize a git repository (create it on the filesystem). By

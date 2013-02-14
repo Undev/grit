@@ -69,7 +69,7 @@ module Grit
     def self.current(repo, options = {})
       begin
         head_ref = repo.git.symbolic_ref({:q => true}, 'HEAD').chomp
-      rescue Git::Errors::CommandFailed => err
+      rescue Grit::Errors::CommandFailed => err
         raise  if err.exitstatus != 1
         return nil
       end
